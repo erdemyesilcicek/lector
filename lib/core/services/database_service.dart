@@ -127,4 +127,21 @@ class DatabaseService {
 
     await docRef.delete();
   }
+
+  // Get the user's exhibition list once
+  Future<List<ExhibitionBook>> getExhibitionBooks() async {
+    if (_userId == null) {
+      return [];
+    }
+
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .get();
+
+    return snapshot.docs.map((doc) {
+      return ExhibitionBook.fromDoc(doc.data(), doc.id);
+    }).toList();
+  }
 }
