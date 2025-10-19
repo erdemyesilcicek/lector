@@ -1,23 +1,36 @@
 // lib/features/explore/book_detail_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:lector/core/models/book_model.dart'; // Import Book model
+import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/database_service.dart';
+import 'package:lector/widgets/rating_modal_widget.dart';
 
-class BookDetailScreen extends StatelessWidget {
-  // We now accept a single Book object
+// The widget itself now just holds the final data
+class BookDetailScreen extends StatefulWidget {
   final Book book;
-  final DatabaseService _databaseService = DatabaseService();
 
-  BookDetailScreen({
+  const BookDetailScreen({
     super.key,
     required this.book,
   });
 
   @override
+  State<BookDetailScreen> createState() => _BookDetailScreenState();
+}
+
+// The State class holds the logic and mutable state
+class _BookDetailScreenState extends State<BookDetailScreen> {
+  final DatabaseService _databaseService = DatabaseService();
+
+  @override
   Widget build(BuildContext context) {
+    // We access the book data using 'widget.book'
+    final book = widget.book;
+
     return Scaffold(
-      appBar: AppBar(title: Text(book.title)),
+      appBar: AppBar(
+        title: Text(book.title),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -29,7 +42,6 @@ class BookDetailScreen extends StatelessWidget {
                 height: 300,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    // Use data from the book object
                     image: NetworkImage(book.coverUrl),
                     fit: BoxFit.contain,
                   ),
@@ -44,7 +56,7 @@ class BookDetailScreen extends StatelessWidget {
                         spreadRadius: 3,
                         blurRadius: 10,
                         offset: const Offset(4, 4),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -53,7 +65,7 @@ class BookDetailScreen extends StatelessWidget {
 
               // --- BOOK INFO ---
               Text(
-                book.title, // Use data from the book object
+                book.title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -62,7 +74,7 @@ class BookDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'by ${book.author}', // Use data from the book object
+                'by ${book.author}',
                 style: TextStyle(
                   fontSize: 16,
                   fontStyle: FontStyle.italic,
@@ -76,25 +88,40 @@ class BookDetailScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement "Mark as Read" functionality
+                    onPressed: () async {
+                      final result = await showModalBottomSheet<Map<String, dynamic>>(
+                        context: context,
+                        builder: (context) => const RatingModal(),
+                        isScrollControlled: true,
+                      );
+
+                      // 'mounted' is now valid here because we are in a State class
+                      if (result != null && mounted) {
+                        final int rating = result['rating'];
+                        final String notes = result['notes'];
+
+                        await _databaseService.addBookToExhibition(book, rating, notes);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Saved to your Exhibition!'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                     icon: const Icon(Icons.check_circle_outline),
                     label: const Text('Mark as Read'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                   ),
                   const SizedBox(width: 12),
                   OutlinedButton.icon(
                     onPressed: () {
                       _databaseService.addBookToReadingList(book);
-                      // Show a confirmation message
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Added to your Reading List!'),
@@ -105,10 +132,7 @@ class BookDetailScreen extends StatelessWidget {
                     icon: const Icon(Icons.bookmark_add_outlined),
                     label: const Text('Add to List'),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                   ),
                 ],
@@ -116,12 +140,14 @@ class BookDetailScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // --- SUMMARY ---
-              // TODO: Add summary to Book model and display it here
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'About this book',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

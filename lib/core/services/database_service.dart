@@ -32,4 +32,27 @@ class DatabaseService {
 
   // We will implement the "add to exhibition" method in the next steps
   // when we create the rating screen.
+
+  // lib/core/services/database_service.dart dosyasının içine
+
+  // Add a book to the user's exhibition (read books)
+  Future<void> addBookToExhibition(Book book, int rating, String notes) async {
+    if (_userId == null) return;
+
+    // Structure: users -> {userId} -> exhibition -> {bookId}
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .doc(book.id);
+
+    await docRef.set({
+      'title': book.title,
+      'author': book.author,
+      'coverUrl': book.coverUrl,
+      'addedAt': Timestamp.now(),
+      'rating': rating,
+      'notes': notes,
+    });
+  }
 }
