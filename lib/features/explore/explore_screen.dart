@@ -1,5 +1,9 @@
-import 'package:lector/features/explore/book_detail_screen.dart';
+// lib/features/explore/explore_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:lector/core/models/book_model.dart';
+import 'package:lector/core/services/book_service.dart';
+import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -10,17 +14,32 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
+  final BookService _bookService = BookService();
+  late Future<List<Book>> _trendingBooksFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch books when the screen is first created
+    _trendingBooksFuture = _fetchBooks();
+  }
+
+  Future<List<Book>> _fetchBooks() async {
+    final booksJson = await _bookService.fetchTrendingBooks();
+    // Convert the JSON list to a list of Book objects
+    return booksJson.map((json) => Book.fromJson(json)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // SafeArea ensures content is not blocked by notches or system bars
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- SEARCH BAR ---
+              // ... (Search Bar remains the same)
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Search for books or authors...',
@@ -35,17 +54,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               const SizedBox(height: 24),
 
-              // --- TRENDING NOW SECTION ---
               _buildSectionTitle('Trending Now'),
               const SizedBox(height: 12),
-              _buildHorizontalBookList(),
-
-              const SizedBox(height: 24),
-
-              // --- NEW RELEASES SECTION ---
-              _buildSectionTitle('New Releases'),
-              const SizedBox(height: 12),
-              _buildHorizontalBookList(),
+              // Use a FutureBuilder to handle the asynchronous API call
+              _buildHorizontalBookList(_trendingBooksFuture),
             ],
           ),
         ),
@@ -53,7 +65,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  // Helper widget for section titles
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -61,37 +72,49 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  // Helper widget for the horizontal book list
-  Widget _buildHorizontalBookList() {
-    return SizedBox(
-      height: 240, // Height of the list container
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5, // Placeholder count
-        itemBuilder: (context, index) {
-          // Placeholder data - will be replaced by API data later
-          return BookCard(
-            title: 'Dune',
-            author: 'Frank Herbert',
-            coverUrl:
-                'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookDetailScreen(
-                    // Pass the book data to the detail screen
-                    title: 'Dune',
-                    author: 'Frank Herbert',
-                    coverUrl:
-                        'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
-                  ),
-                ),
-              );
-            },
+  Widget _buildHorizontalBookList(Future<List<Book>> future) {
+    return FutureBuilder<List<Book>>(
+      future: future,
+      builder: (context, snapshot) {
+        // While waiting for data, show a loading indicator
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+        // If an error occurred, show an error message
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: 240,
+            child: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
+        // If data is available, build the list
+        if (snapshot.hasData) {
+          final books = snapshot.data!;
+          return SizedBox(
+            height: 240,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: books.length,
+              itemBuilder: (context, index) {
+                final book = books[index];
+                return BookCard(
+                  title: book.title,
+                  author: book.author,
+                  coverUrl: book.coverUrl,
+                  onTap: () {
+                    // TODO: Update BookDetailScreen to accept a Book object
+                  },
+                );
+              },
+            ),
+          );
+        }
+        // By default, show an empty container
+        return const SizedBox.shrink();
+      },
     );
   }
 }
