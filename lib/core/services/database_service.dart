@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lector/core/models/book_model.dart';
+import 'package:lector/core/models/exhibition_book_model.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -81,6 +82,28 @@ class DatabaseService {
           author: data['author'] ?? 'No Author',
           coverUrl: data['coverUrl'] ?? '',
         );
+      }).toList();
+    });
+  }
+
+  // lib/core/services/database_service.dart dosyasının içine
+
+  // Get a live stream of the user's exhibition
+  Stream<List<ExhibitionBook>> getExhibitionStream() {
+    if (_userId == null) {
+      return Stream.value([]);
+    }
+
+    final collectionRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .orderBy('addedAt', descending: true);
+
+    return collectionRef.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        // Use our new model's factory constructor
+        return ExhibitionBook.fromDoc(doc.data(), doc.id);
       }).toList();
     });
   }

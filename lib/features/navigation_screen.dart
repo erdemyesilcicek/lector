@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lector/features/explore/explore_screen.dart';
 import 'package:lector/features/profile/profile_screen.dart';
 import 'package:lector/features/reading_list/reading_list_screen.dart';
+import 'package:lector/features/exhibition/exhibition_screen.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -16,7 +17,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   // Placeholder screens for each tab
   static const List<Widget> _screens = <Widget>[
   const ExploreScreen(), // Changed line
-  Center(child: Text('Exhibition Screen')),
+  const ExhibitionScreen(),
   const ReadingListScreen(),
   const ProfileScreen(),
 ];
