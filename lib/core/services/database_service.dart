@@ -33,9 +33,6 @@ class DatabaseService {
     });
   }
 
-  // We will implement the "add to exhibition" method in the next steps
-  // when we create the rating screen.
-
   // Add a book to the user's exhibition (read books)
   Future<void> addBookToExhibition(Book book, int rating, String notes) async {
     if (_userId == null) return;
@@ -193,4 +190,31 @@ class DatabaseService {
 
     return recommendations;
   }
+
+  // Check if a specific book is in the reading list (live)
+  Stream<bool> isBookInReadingList(String bookId) {
+    if (_userId == null) return Stream.value(false);
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('reading_list')
+        .doc(bookId)
+        .snapshots()
+        .map((snapshot) => snapshot.exists); // Returns true if the doc exists
+  }
+
+  // Check if a specific book is in the exhibition (live)
+  Stream<bool> isBookInExhibition(String bookId) {
+    if (_userId == null) return Stream.value(false);
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .doc(bookId)
+        .snapshots()
+        .map((snapshot) => snapshot.exists);
+  }
+
+
+
 }
