@@ -1,17 +1,16 @@
-// lib/features/authentication/login_screen.dart
+// lib/features/authentication/signup_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:lector/features/authentication/signup_screen.dart';
 import 'package:lector/core/services/auth_service.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final AuthService _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,6 +25,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        // Geri dönebilmek için bir app bar ekledik
+        title: const Text('Sign Up'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -34,13 +39,13 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Welcome Back',
+                'Create Account',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'Sign in to continue your journey.',
+                'Start your reading journey with Lector.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               ),
@@ -59,27 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  _authService.signInWithEmailAndPassword(
+                  _authService.createUserWithEmailAndPassword(
                     _emailController.text,
                     _passwordController.text,
                   );
+                  // Pop the screen to go back to the login screen after signing up
+                  if (mounted) Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SignUpScreen(),
-                    ),
-                  );
-                },
-                child: const Text("Don't have an account? Sign Up"),
+                child: const Text('Sign Up'),
               ),
             ],
           ),
