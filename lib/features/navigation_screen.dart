@@ -1,6 +1,5 @@
-// lib/features/navigation_screen.dart
-
 import 'package:flutter/material.dart';
+import 'package:lector/features/explore/explore_screen.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -14,11 +13,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   // Placeholder screens for each tab
   static const List<Widget> _screens = <Widget>[
-    Center(child: Text('Explore Screen')),
-    Center(child: Text('Exhibition Screen')),
-    Center(child: Text('Reading List Screen')),
-    Center(child: Text('Profile Screen')),
-  ];
+  const ExploreScreen(), // Changed line
+  Center(child: Text('Exhibition Screen')),
+  Center(child: Text('Reading List Screen')),
+  Center(child: Text('Profile Screen')),
+];
 
   void _onItemTapped(int index) {
     setState(() {
