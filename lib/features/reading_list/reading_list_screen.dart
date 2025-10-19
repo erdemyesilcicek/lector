@@ -119,13 +119,15 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
-  // UI for the swipe right background
+// UI for the swipe right background (Mark as Read)
   Widget _buildSwipeActionRight() {
     return Container(
-      color: Colors.green,
-      alignment: Alignment.centerLeft,
+      color: Colors.green, // Green for "Mark as Read"
+      alignment: Alignment.centerLeft, // Align content to the left
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
+        // Icon and text are at the start of the row
+        mainAxisAlignment: MainAxisAlignment.start, 
         children: [
           Icon(Icons.check_circle, color: Colors.white),
           SizedBox(width: 10),
@@ -135,14 +137,15 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     );
   }
 
-  // UI for the swipe left background
+// UI for the swipe left background (Remove)
   Widget _buildSwipeActionLeft() {
     return Container(
-      color: Colors.red,
-      alignment: Alignment.centerRight,
+      color: Colors.red, // Red for "Remove"
+      alignment: Alignment.centerRight, // Align content to the right
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        // Icon and text are at the end of the row
+        mainAxisAlignment: MainAxisAlignment.end, 
         children: [
           Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           SizedBox(width: 10),
