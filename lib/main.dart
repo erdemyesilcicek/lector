@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lector/features/navigation_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:lector/features/authentication/auth_gate.dart';
 
 // main fonksiyonunu async olarak güncelledik
 void main() async {
@@ -28,7 +29,7 @@ class LectorApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
       ),
-      home: const NavigationScreen(),
+      home: const AuthGate(),
     );
   }
 }
