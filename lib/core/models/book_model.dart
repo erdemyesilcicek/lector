@@ -5,21 +5,23 @@ class Book {
   final String title;
   final String author;
   final String coverUrl;
-  final List<String> genres; // YENİ ALAN
+  final String summary; // YENİ ALAN
+  final List<String> genres;
 
   Book({
     required this.id,
     required this.title,
     required this.author,
     required this.coverUrl,
-    required this.genres, // YENİ
+    required this.summary, // YENİ
+    required this.genres,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
     final imageLinks = volumeInfo['imageLinks'] ?? {};
-
-    // API'den gelen kategorileri alıp List<String>'e çeviriyoruz
+    final description = volumeInfo['description'] ?? 'No summary available.'; // API'den özet çekiyoruz
+    
     final categories = (volumeInfo['categories'] as List<dynamic>?)
         ?.map((e) => e.toString())
         ?.toList() ?? [];
@@ -28,8 +30,9 @@ class Book {
       id: json['id'] ?? 'Unknown ID',
       title: volumeInfo['title'] ?? 'No Title',
       author: (volumeInfo['authors'] as List<dynamic>?)?.first ?? 'Unknown Author',
-      coverUrl: imageLinks['thumbnail'] ?? 'https://i.imgur.com/J5LVHEL.png', // Daha iyi bir placeholder
-      genres: categories, // YENİ
+      coverUrl: imageLinks['thumbnail'] ?? 'https://i.imgur.com/J5LVHEL.png',
+      summary: description, // YENİ
+      genres: categories,
     );
   }
 }

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/widgets/book_card_widget.dart';
-import 'package:lector/features/exhibition/exhibition_detail_screen.dart';
+import 'package:lector/core/models/book_model.dart';
+import 'package:lector/features/explore/book_detail_screen.dart';
 
 class ExhibitionScreen extends StatefulWidget {
   const ExhibitionScreen({super.key});
@@ -59,12 +60,20 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
                 author: exBook.author,
                 coverUrl: exBook.coverUrl,
                 onTap: () {
+                  final bookForDetail = Book(
+                    id: exBook.id,
+                    title: exBook.title,
+                    author: exBook.author,
+                    coverUrl: exBook.coverUrl,
+                    summary: exBook
+                        .summary,
+                    genres: exBook.genres,
+                  );
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // Pass the entire ExhibitionBook object
                       builder: (context) =>
-                          ExhibitionDetailScreen(exhibitionBook: exBook),
+                          BookDetailScreen(book: bookForDetail),
                     ),
                   );
                 },

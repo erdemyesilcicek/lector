@@ -28,7 +28,8 @@ class DatabaseService {
       'title': book.title,
       'author': book.author,
       'coverUrl': book.coverUrl,
-      'genres': book.genres, // EKLENDİ
+      'summary': book.summary,
+      'genres': book.genres,
       'addedAt': Timestamp.now(),
     });
   }
@@ -48,6 +49,7 @@ class DatabaseService {
       'title': book.title,
       'author': book.author,
       'coverUrl': book.coverUrl,
+      'summary': book.summary,
       'genres': book.genres, // EKLENDİ
       'addedAt': Timestamp.now(),
       'rating': rating,
@@ -77,6 +79,7 @@ class DatabaseService {
           title: data['title'] ?? 'No Title',
           author: data['author'] ?? 'No Author',
           coverUrl: data['coverUrl'] ?? '',
+          summary: data['summary'] ?? 'No summary available.',
           genres:
               (data['genres'] as List<dynamic>?)
                   ?.map((e) => e.toString())
@@ -215,6 +218,20 @@ class DatabaseService {
         .map((snapshot) => snapshot.exists);
   }
 
-
-
+  // Get a live stream of a specific book in the user's exhibition
+  Stream<ExhibitionBook?> getExhibitionBookStream(String bookId) {
+    if (_userId == null) return Stream.value(null);
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .doc(bookId)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.exists && snapshot.data() != null) {
+            return ExhibitionBook.fromDoc(snapshot.data()!, snapshot.id);
+          }
+          return null;
+        });
+  }
 }
