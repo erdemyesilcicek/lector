@@ -1,0 +1,35 @@
+// lib/core/services/database_service.dart
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lector/core/models/book_model.dart';
+
+class DatabaseService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Helper method to get the current user's ID
+  String? get _userId => _auth.currentUser?.uid;
+
+  // Add a book to the user's reading list
+  Future<void> addBookToReadingList(Book book) async {
+    if (_userId == null) return; // Exit if no user is logged in
+
+    // Structure: users -> {userId} -> reading_list -> {bookId}
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('reading_list')
+        .doc(book.id);
+
+    await docRef.set({
+      'title': book.title,
+      'author': book.author,
+      'coverUrl': book.coverUrl,
+      'addedAt': Timestamp.now(), // To know when it was added
+    });
+  }
+
+  // We will implement the "add to exhibition" method in the next steps
+  // when we create the rating screen.
+}
