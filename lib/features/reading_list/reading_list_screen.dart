@@ -47,9 +47,10 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
               // Use Dismissible to add swipe actions
               return Dismissible(
                 key: Key(book.id), // Unique key for each item
-                background: _buildSwipeActionRight(),// Sağa kaydırınca (Left to Right) bu görünür
-                secondaryBackground: _buildSwipeActionLeft(),// Sola kaydırınca (Right to Left) bu görünür
-
+                background:
+                    _buildSwipeActionRight(), // Sağa kaydırınca (Left to Right) bu görünür
+                secondaryBackground:
+                    _buildSwipeActionLeft(), // Sola kaydırınca (Right to Left) bu görünür
                 // This function is called when a swipe is completed
                 onDismissed: (direction) async {
                   if (direction == DismissDirection.endToStart) {
