@@ -5,6 +5,7 @@ import 'package:lector/features/navigation_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:lector/features/authentication/auth_gate.dart';
+import 'package:lector/core/constants/app_theme.dart';
 
 // main fonksiyonunu async olarak güncelledik
 void main() async {
@@ -25,10 +26,7 @@ class LectorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Lector',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: const AuthGate(),
     );
   }
