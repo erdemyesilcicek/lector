@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/book_service.dart';
+import 'package:lector/core/services/database_service.dart'; // DatabaseService'i import et
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 
@@ -15,27 +16,41 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   final BookService _bookService = BookService();
+  final DatabaseService _databaseService = DatabaseService(); // DatabaseService'i ekle
   final _searchController = TextEditingController();
   
   late Future<List<Book>> _trendingBooksFuture;
-  List<Book>? _searchResults; // Nullable list to hold search results
+  List<Book>? _searchResults;
   bool _isLoading = false;
+  Set<String> _readBookIds = {}; // Okunan kitap ID'lerini tutacak set
 
   @override
   void initState() {
     super.initState();
-    _trendingBooksFuture = _fetchTrendingBooks();
+    // Önce okunan kitapları yükle, sonra trendleri getir
+    _initializeScreen();
+  }
+
+  Future<void> _initializeScreen() async {
+    _readBookIds = await _databaseService.getReadBookIds();
+    setState(() {
+      _trendingBooksFuture = _fetchTrendingBooks();
+    });
   }
 
   Future<List<Book>> _fetchTrendingBooks() async {
     final booksJson = await _bookService.fetchTrendingBooks();
-    return booksJson.map((json) => Book.fromJson(json)).toList();
+    // Okunmamış kitapları filtrele
+    return booksJson
+        .map((json) => Book.fromJson(json))
+        .where((book) => !_readBookIds.contains(book.id))
+        .toList();
   }
 
   Future<void> _performSearch(String query) async {
     if (query.isEmpty) {
       setState(() {
-        _searchResults = null; // Clear results if query is empty
+        _searchResults = null;
       });
       return;
     }
@@ -44,7 +59,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
     final booksJson = await _bookService.searchBooks(query);
     setState(() {
-      _searchResults = booksJson.map((json) => Book.fromJson(json)).toList();
+      // Okunmamış kitapları filtrele
+      _searchResults = booksJson
+          .map((json) => Book.fromJson(json))
+          .where((book) => !_readBookIds.contains(book.id))
+          .toList();
       _isLoading = false;
     });
   }
@@ -54,7 +73,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _searchController.dispose();
     super.dispose();
   }
-
+  
+  // build ve diğer yardımcı metotlar aynı kalacak...
+  // ... (build, _buildDefaultContent, _buildSearchResults, etc.)
+  // ... KODUN GERİ KALANINI DEĞİŞTİRMENE GEREK YOK ...
   @override
   Widget build(BuildContext context) {
     // Determine if we should show search results or the default content
@@ -115,7 +137,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildSearchResults() {
     if (_searchResults!.isEmpty) {
-      return const Center(child: Text('No books found.'));
+      return const Center(child: Text('No new books found.'));
     }
     // A vertical list for search results
     return ListView.builder(
@@ -155,6 +177,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
         }
         if (snapshot.hasData) {
           final books = snapshot.data!;
+          if (books.isEmpty){
+            return const SizedBox(height: 240, child: Center(child: Text('No new books to show.')));
+          }
           return SizedBox(
             height: 240,
             child: ListView.builder(

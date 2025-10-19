@@ -234,4 +234,21 @@ class DatabaseService {
           return null;
         });
   }
+
+  // lib/core/services/database_service.dart dosyasının içine
+
+  // Get a set of all book IDs in the user's exhibition for quick lookups
+  Future<Set<String>> getReadBookIds() async {
+    if (_userId == null) return {};
+    
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .get();
+
+    // Return a Set for efficient .contains() checks
+    return snapshot.docs.map((doc) => doc.id).toSet();
+  }
+
 }
