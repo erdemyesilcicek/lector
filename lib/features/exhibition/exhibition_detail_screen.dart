@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
+import 'package:lector/core/services/database_service.dart'; // Import service
 
-class ExhibitionDetailScreen extends StatelessWidget {
+class ExhibitionDetailScreen extends StatefulWidget { // Changed to StatefulWidget
   final ExhibitionBook exhibitionBook;
 
   const ExhibitionDetailScreen({
@@ -12,7 +13,17 @@ class ExhibitionDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<ExhibitionDetailScreen> createState() => _ExhibitionDetailScreenState();
+}
+
+class _ExhibitionDetailScreenState extends State<ExhibitionDetailScreen> { // State class
+  final DatabaseService _databaseService = DatabaseService(); // Moved service here
+
+  @override
   Widget build(BuildContext context) {
+    // Access the book via widget.exhibitionBook
+    final exhibitionBook = widget.exhibitionBook;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(exhibitionBook.title),
@@ -22,7 +33,7 @@ class ExhibitionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- BOOK COVER (Centered) ---
+            // ... (The rest of the UI remains the same)
             Center(
               child: Container(
                 height: 300,
@@ -45,7 +56,6 @@ class ExhibitionDetailScreen extends StatelessWidget {
               ),
             ),
             
-            // --- YOUR RATING ---
             const Text(
               'Your Rating',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -62,13 +72,11 @@ class ExhibitionDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- YOUR NOTES ---
             const Text(
               'Your Notes',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Display a message if notes are empty
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
@@ -93,8 +101,18 @@ class ExhibitionDetailScreen extends StatelessWidget {
             // --- DELETE BUTTON ---
             Center(
               child: TextButton.icon(
-                onPressed: () {
-                  // TODO: Implement delete functionality
+                // UPDATED onPressed
+                onPressed: () async {
+                  // Call the service to delete the book
+                  await _databaseService.deleteFromExhibition(exhibitionBook.id);
+                  
+                  // After deleting, close the detail screen
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('${exhibitionBook.title} removed from Exhibition.')),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.delete_outline),
                 label: const Text('Remove from Exhibition'),

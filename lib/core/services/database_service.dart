@@ -114,4 +114,17 @@ class DatabaseService {
 
     await docRef.delete();
   }
+
+  // Delete a book from the user's exhibition
+  Future<void> deleteFromExhibition(String bookId) async {
+    if (_userId == null) return;
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .doc(bookId);
+
+    await docRef.delete();
+  }
 }
