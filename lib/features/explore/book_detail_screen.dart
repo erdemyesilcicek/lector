@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:lector/core/models/book_model.dart';
-import 'package:lector/core/models/exhibition_book_model.dart'; // ExhibitionBook modelini import et
+import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/widgets/rating_modal_widget.dart';
 
@@ -22,13 +22,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   final DatabaseService _databaseService = DatabaseService();
 
   late Stream<bool> _isInReadingListStream;
-  late Stream<ExhibitionBook?> _exhibitionBookStream; // ExhibitionBook nesnesini dinleyeceğiz
+  late Stream<ExhibitionBook?> _exhibitionBookStream;
 
   @override
   void initState() {
     super.initState();
     _isInReadingListStream = _databaseService.isBookInReadingList(widget.book.id);
-    _exhibitionBookStream = _databaseService.getExhibitionBookStream(widget.book.id); // Yeni metot çağrısı
+    _exhibitionBookStream = _databaseService.getExhibitionBookStream(widget.book.id);
   }
 
   @override
@@ -83,14 +83,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               StreamBuilder<ExhibitionBook?>(
                 stream: _exhibitionBookStream,
                 builder: (context, exhibitionSnapshot) {
-                  final exhibitionBook = exhibitionSnapshot.data; // Eğer kitap sergide ise bilgileri tutar
+                  final exhibitionBook = exhibitionSnapshot.data;
 
-                  // Eğer kitap sergideyse (okunmuşsa), puanı ve notları göster
                   if (exhibitionBook != null) {
                     return _buildExhibitionDetails(exhibitionBook);
                   }
 
-                  // Eğer sergide değilse, "Reading List" durumunu kontrol et ve butonları göster
                   return StreamBuilder<bool>(
                     stream: _isInReadingListStream,
                     builder: (context, readingListSnapshot) {
@@ -112,7 +110,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                book.summary, // Artık Book modelinden gelen özeti kullanıyoruz
+                book.summary,
                 textAlign: TextAlign.justify,
                 style: const TextStyle(fontSize: 16, height: 1.5),
               ),
@@ -123,7 +121,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // Okunmamış veya listedeki kitaplar için butonları oluşturan yardımcı metot
   Widget _buildActionButtons(Book book, bool isInReadingList) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -194,15 +191,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // Kitap sergide ise puan ve notları gösteren yardımcı metot
+  // --- GÜNCELLENEN METOT ---
+  // Artık "Edit" butonunu ve mantığını içeriyor.
   Widget _buildExhibitionDetails(ExhibitionBook exhibitionBook) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Your Rating',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        const Text('Your Rating', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Row(
           children: List.generate(5, (index) {
@@ -214,11 +209,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           }),
         ),
         const SizedBox(height: 24),
-
-        const Text(
-          'Your Notes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        const Text('Your Notes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -228,9 +219,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            exhibitionBook.notes.isEmpty
-              ? 'No notes added for this book.'
-              : exhibitionBook.notes,
+            exhibitionBook.notes.isEmpty ? 'No notes added for this book.' : exhibitionBook.notes,
             style: TextStyle(
               fontSize: 16,
               height: 1.5,
@@ -239,24 +228,53 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 32),
-        Center(
-          child: TextButton.icon(
-            onPressed: () async {
-              await _databaseService.deleteFromExhibition(exhibitionBook.id);
-              if (mounted) {
-                Navigator.of(context).pop(); // Detay ekranını kapat
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${exhibitionBook.title} removed from Exhibition.')),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () async {
+                final result = await showModalBottomSheet<Map<String, dynamic>>(
+                  context: context,
+                  builder: (context) => RatingModal(
+                    initialRating: exhibitionBook.rating,
+                    initialNotes: exhibitionBook.notes,
+                  ),
+                  isScrollControlled: true,
                 );
-              }
-            },
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Remove from Exhibition'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red.shade700,
+
+                if (result != null && mounted) {
+                  final int newRating = result['rating'];
+                  final String newNotes = result['notes'];
+
+                  await _databaseService.updateExhibitionBook(exhibitionBook.id, newRating, newNotes);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Your rating has been updated!')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Edit Rating'),
             ),
-          ),
+            const SizedBox(width: 16),
+            TextButton.icon(
+              onPressed: () async {
+                await _databaseService.deleteFromExhibition(exhibitionBook.id);
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${exhibitionBook.title} removed from Exhibition.')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Remove'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red.shade700,
+              ),
+            ),
+          ],
         ),
       ],
     );

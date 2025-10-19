@@ -3,7 +3,10 @@
 import 'package:flutter/material.dart';
 
 class RatingModal extends StatefulWidget {
-  const RatingModal({super.key});
+  final int? initialRating;
+  final String? initialNotes;
+
+  const RatingModal({super.key, this.initialRating, this.initialNotes});
 
   @override
   State<RatingModal> createState() => _RatingModalState();
@@ -14,6 +17,18 @@ class _RatingModalState extends State<RatingModal> {
   final _notesController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Eğer başlangıç değerleri gönderildiyse, state'i onlarla başlat
+    if (widget.initialRating != null) {
+      _rating = widget.initialRating!;
+    }
+    if (widget.initialNotes != null) {
+      _notesController.text = widget.initialNotes!;
+    }
+  }
+
+  @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
@@ -22,15 +37,23 @@ class _RatingModalState extends State<RatingModal> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min, // To make the modal wrap its content
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Rate this book',
+          Text(
+            // Başlığı dinamik hale getirdik
+            widget.initialRating == null
+                ? 'Rate this book'
+                : 'Edit your rating',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           // Star Rating
@@ -64,18 +87,18 @@ class _RatingModalState extends State<RatingModal> {
           const SizedBox(height: 24),
           // Save Button
           ElevatedButton(
-            // The button is disabled until a rating is given
-            onPressed: _rating == 0 ? null : () {
-              // Return the data to the previous screen
-              Navigator.pop(context, {
-                'rating': _rating,
-                'notes': _notesController.text,
-              });
-            },
+            onPressed: _rating == 0
+                ? null
+                : () {
+                    Navigator.pop(context, {
+                      'rating': _rating,
+                      'notes': _notesController.text,
+                    });
+                  },
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Save to Exhibition'),
+            child: const Text('Save Changes'),
           ),
         ],
       ),
