@@ -19,9 +19,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Reading List'),
-      ),
+      appBar: AppBar(title: const Text('My Reading List')),
       body: StreamBuilder<List<Book>>(
         stream: _databaseService.getReadingListStream(),
         builder: (context, snapshot) {
@@ -49,16 +47,18 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
               // Use Dismissible to add swipe actions
               return Dismissible(
                 key: Key(book.id), // Unique key for each item
-                background: _buildSwipeActionLeft(), // Swipe Right to Left (Delete)
-                secondaryBackground: _buildSwipeActionRight(), // Swipe Left to Right (Mark as Read)
-                
+                background: _buildSwipeActionRight(),// Sağa kaydırınca (Left to Right) bu görünür
+                secondaryBackground: _buildSwipeActionLeft(),// Sola kaydırınca (Right to Left) bu görünür
+
                 // This function is called when a swipe is completed
                 onDismissed: (direction) async {
                   if (direction == DismissDirection.endToStart) {
                     // Swiped Left (Delete)
                     await _databaseService.deleteFromReadingList(book.id);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${book.title} removed from list.')),
+                      SnackBar(
+                        content: Text('${book.title} removed from list.'),
+                      ),
                     );
                   }
                 },
@@ -75,7 +75,12 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                 },
 
                 child: ListTile(
-                  leading: Image.network(book.coverUrl, fit: BoxFit.cover, width: 50, height: 80),
+                  leading: Image.network(
+                    book.coverUrl,
+                    fit: BoxFit.cover,
+                    width: 50,
+                    height: 80,
+                  ),
                   title: Text(book.title),
                   subtitle: Text(book.author),
                   onTap: () {
@@ -119,7 +124,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
-// UI for the swipe right background (Mark as Read)
+  // UI for the swipe right background (Mark as Read)
   Widget _buildSwipeActionRight() {
     return Container(
       color: Colors.green, // Green for "Mark as Read"
@@ -127,17 +132,20 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
         // Icon and text are at the start of the row
-        mainAxisAlignment: MainAxisAlignment.start, 
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(Icons.check_circle, color: Colors.white),
           SizedBox(width: 10),
-          Text('Mark as Read', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            'Mark as Read',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
   }
 
-// UI for the swipe left background (Remove)
+  // UI for the swipe left background (Remove)
   Widget _buildSwipeActionLeft() {
     return Container(
       color: Colors.red, // Red for "Remove"
@@ -145,9 +153,12 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
         // Icon and text are at the end of the row
-        mainAxisAlignment: MainAxisAlignment.end, 
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            'Remove',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           SizedBox(width: 10),
           Icon(Icons.delete, color: Colors.white),
         ],
