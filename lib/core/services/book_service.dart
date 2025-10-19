@@ -27,4 +27,29 @@ class BookService {
       return []; // Return an empty list on error
     }
   }
+
+  // lib/core/services/book_service.dart dosyasının içine
+
+  // Search for books using a query
+  Future<List<dynamic>> searchBooks(String query) async {
+    if (query.isEmpty) {
+      return []; // Return empty list if query is empty
+    }
+
+    try {
+      // Encode the query to handle spaces and special characters
+      final encodedQuery = Uri.encodeComponent(query);
+      final response = await http.get(Uri.parse('$_baseUrl?q=$encodedQuery&maxResults=20'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['items'] ?? [];
+      } else {
+        throw Exception('Failed to search books');
+      }
+    } catch (e) {
+      print('Error searching books: $e');
+      return [];
+    }
+  }
 }
