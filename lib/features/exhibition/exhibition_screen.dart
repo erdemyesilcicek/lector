@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/widgets/book_card_widget.dart';
+import 'package:lector/features/exhibition/exhibition_detail_screen.dart';
 
 class ExhibitionScreen extends StatefulWidget {
   const ExhibitionScreen({super.key});
@@ -18,9 +19,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Exhibition'),
-      ),
+      appBar: AppBar(title: const Text('My Exhibition')),
       body: StreamBuilder<List<ExhibitionBook>>(
         stream: _databaseService.getExhibitionStream(),
         builder: (context, snapshot) {
@@ -41,7 +40,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
           }
 
           final exhibitionList = snapshot.data!;
-          
+
           // Use a GridView for the gallery layout
           return GridView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -60,7 +59,14 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
                 author: exBook.author,
                 coverUrl: exBook.coverUrl,
                 onTap: () {
-                  // TODO: Navigate to a detail screen that shows rating and notes
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      // Pass the entire ExhibitionBook object
+                      builder: (context) =>
+                          ExhibitionDetailScreen(exhibitionBook: exBook),
+                    ),
+                  );
                 },
               );
             },
