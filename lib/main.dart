@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lector/features/navigation_screen.dart';
 
 // Uygulamanın başlangıç noktası
 void main() {
@@ -13,21 +14,12 @@ class LectorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Lector',
-      // Sağ üstteki "DEBUG" etiketini kaldırır
-      debugShowCheckedModeBanner: false, 
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
       ),
-      // Uygulamanın ilk açılacak ekranı (şimdilik boş)
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Lector'),
-        ),
-        body: const Center(
-          child: Text('Proje Temizlendi!'),
-        ),
-      ),
+      home: const NavigationScreen(),
     );
   }
 }
