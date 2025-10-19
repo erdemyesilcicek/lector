@@ -105,7 +105,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   author: book.author,
                   coverUrl: book.coverUrl,
                   onTap: () {
-                    // TODO: Update BookDetailScreen to accept a Book object
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        // Pass the entire 'book' object to the detail screen
+                        builder: (context) => BookDetailScreen(book: book),
+                      ),
+                    );
                   },
                 );
               },

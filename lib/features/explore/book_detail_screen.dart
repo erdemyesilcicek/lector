@@ -1,27 +1,22 @@
 // lib/features/explore/book_detail_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/models/book_model.dart'; // Import Book model
 
 class BookDetailScreen extends StatelessWidget {
-  // This screen will receive data from the card that was tapped.
-  // We add these parameters to its constructor.
-  final String title;
-  final String author;
-  final String coverUrl;
+  // We now accept a single Book object
+  final Book book;
 
   const BookDetailScreen({
     super.key,
-    required this.title,
-    required this.author,
-    required this.coverUrl,
+    required this.book,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // The back button is automatically added by Flutter
-        title: Text(title),
+        title: Text(book.title),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -34,12 +29,12 @@ class BookDetailScreen extends StatelessWidget {
                 height: 300,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(coverUrl),
+                    // Use data from the book object
+                    image: NetworkImage(book.coverUrl),
                     fit: BoxFit.contain,
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                // Adding a slight shadow for depth
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -58,7 +53,7 @@ class BookDetailScreen extends StatelessWidget {
 
               // --- BOOK INFO ---
               Text(
-                title,
+                book.title, // Use data from the book object
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -67,7 +62,7 @@ class BookDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'by $author',
+                'by ${book.author}', // Use data from the book object
                 style: TextStyle(
                   fontSize: 16,
                   fontStyle: FontStyle.italic,
@@ -80,7 +75,6 @@ class BookDetailScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Primary action button
                   ElevatedButton.icon(
                     onPressed: () {
                       // TODO: Implement "Mark as Read" functionality
@@ -94,7 +88,6 @@ class BookDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Secondary action button
                   OutlinedButton.icon(
                     onPressed: () {
                       // TODO: Implement "Add to Reading List" functionality
@@ -110,6 +103,7 @@ class BookDetailScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // --- SUMMARY ---
+              // TODO: Add summary to Book model and display it here
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -122,8 +116,7 @@ class BookDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                // Placeholder summary text
-                'Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the “spice” melange, a drug capable of extending life and enhancing consciousness. Coveted across the known universe, melange is a prize worth killing for...',
+                'Summary will be displayed here once it is added to the Book model.',
                 textAlign: TextAlign.justify,
                 style: TextStyle(fontSize: 16, height: 1.5),
               ),
