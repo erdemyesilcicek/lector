@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
+import 'package:lector/features/profile/recommendations_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,7 +16,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   final DatabaseService _databaseService = DatabaseService();
-  
+
   // A future to hold the statistics data
   late Future<Map<String, dynamic>> _statsFuture;
 
@@ -28,23 +29,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Method to fetch data and calculate stats
   Future<Map<String, dynamic>> _calculateStats() async {
     final books = await _databaseService.getExhibitionBooks();
-    
+
     // Simple calculation for total books read
     final totalBooks = books.length;
 
     // TODO: Add more complex calculations (favorite genre, etc.)
-    
-    return {
-      'totalBooks': totalBooks,
-    };
+
+    return {'totalBooks': totalBooks};
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-      ),
+      appBar: AppBar(title: const Text('My Profile')),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _statsFuture,
         builder: (context, snapshot) {
@@ -65,28 +62,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // --- STATS CARD ---
                 Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
                         const Text(
                           'Reading Stats',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 20),
-                        _buildStatRow('Total Books Read', '${stats['totalBooks']}'),
+                        _buildStatRow(
+                          'Total Books Read',
+                          '${stats['totalBooks']}',
+                        ),
                         // TODO: Add more stat rows here
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // --- SMART RECOMMENDATIONS BUTTON ---
                 ElevatedButton.icon(
                   onPressed: () {
-                    // TODO: Navigate to recommendations screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RecommendationsScreen(),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.lightbulb_outline),
                   label: const Text('Get Smart Recommendations'),
@@ -95,9 +105,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
-                
+
                 // Spacer to push the sign out button to the bottom
-                const Spacer(), 
+                const Spacer(),
 
                 // --- SIGN OUT BUTTON ---
                 TextButton.icon(

@@ -5,26 +5,31 @@ class Book {
   final String title;
   final String author;
   final String coverUrl;
+  final List<String> genres; // YENİ ALAN
 
   Book({
     required this.id,
     required this.title,
     required this.author,
     required this.coverUrl,
+    required this.genres, // YENİ
   });
 
-  // A factory constructor to create a Book from the API's JSON response
   factory Book.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
     final imageLinks = volumeInfo['imageLinks'] ?? {};
-    
+
+    // API'den gelen kategorileri alıp List<String>'e çeviriyoruz
+    final categories = (volumeInfo['categories'] as List<dynamic>?)
+        ?.map((e) => e.toString())
+        ?.toList() ?? [];
+
     return Book(
       id: json['id'] ?? 'Unknown ID',
       title: volumeInfo['title'] ?? 'No Title',
-      // The API returns authors as a list, we'll take the first one
       author: (volumeInfo['authors'] as List<dynamic>?)?.first ?? 'Unknown Author',
-      // Get the thumbnail image, or a placeholder if it doesn't exist
-      coverUrl: imageLinks['thumbnail'] ?? 'https://via.placeholder.com/150',
+      coverUrl: imageLinks['thumbnail'] ?? 'https://i.imgur.com/J5LVHEL.png', // Daha iyi bir placeholder
+      genres: categories, // YENİ
     );
   }
 }

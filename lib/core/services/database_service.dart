@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
+import 'package:lector/core/services/book_service.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -27,7 +28,8 @@ class DatabaseService {
       'title': book.title,
       'author': book.author,
       'coverUrl': book.coverUrl,
-      'addedAt': Timestamp.now(), // To know when it was added
+      'genres': book.genres, // EKLENDİ
+      'addedAt': Timestamp.now(),
     });
   }
 
@@ -49,6 +51,7 @@ class DatabaseService {
       'title': book.title,
       'author': book.author,
       'coverUrl': book.coverUrl,
+      'genres': book.genres, // EKLENDİ
       'addedAt': Timestamp.now(),
       'rating': rating,
       'notes': notes,
@@ -73,10 +76,15 @@ class DatabaseService {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         return Book(
-          id: doc.id, // The document ID is the book's ID
+          id: doc.id,
           title: data['title'] ?? 'No Title',
           author: data['author'] ?? 'No Author',
           coverUrl: data['coverUrl'] ?? '',
+          genres:
+              (data['genres'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [],
         );
       }).toList();
     });
@@ -143,5 +151,46 @@ class DatabaseService {
     return snapshot.docs.map((doc) {
       return ExhibitionBook.fromDoc(doc.data(), doc.id);
     }).toList();
+  }
+
+  // Get book recommendations based on user's exhibition
+  Future<List<Book>> getRecommendations() async {
+    // 1. Kullanıcının okuduğu ve yüksek puan verdiği kitapları al
+    final exhibition = await getExhibitionBooks();
+    if (exhibition.isEmpty) return [];
+
+    // 4 veya 5 yıldız verilmiş kitapları filtrele
+    final highRatedBooks = exhibition.where((b) => b.rating >= 4).toList();
+    if (highRatedBooks.isEmpty) return [];
+
+    // 2. Analiz için bir "tohum" (seed) seç
+    // En son eklenen yüksek puanlı kitabın ilk türünü tohum olarak alalım (basit bir başlangıç)
+    highRatedBooks.shuffle(); // Biraz rastgelelik katalım
+    final seedBook = highRatedBooks.first;
+    if (seedBook.genres.isEmpty) return [];
+    final seedGenre = seedBook.genres.first;
+
+    // 3. Google Books API'sinde bu türe göre yeni kitaplar ara
+    final bookService = BookService(); // BookService'i burada kullanıyoruz
+    final searchResultsJson = await bookService.searchBooks(
+      'subject:${seedGenre}',
+    );
+
+    // 4. Sonuçları filtrele: Kullanıcının zaten okuduğu veya listesine eklediği kitapları çıkar
+    final allReadBookIds = exhibition.map((b) => b.id).toSet();
+    final readingList = await getReadingListStream().first; // Anlık listeyi al
+    final readingListIds = readingList.map((b) => b.id).toSet();
+
+    final recommendations = searchResultsJson
+        .map((json) => Book.fromJson(json))
+        .where((book) {
+          final hasRead = allReadBookIds.contains(book.id);
+          final isOnList = readingListIds.contains(book.id);
+          return !hasRead &&
+              !isOnList; // Henüz okunmamış ve listede olmayanları al
+        })
+        .toList();
+
+    return recommendations;
   }
 }
