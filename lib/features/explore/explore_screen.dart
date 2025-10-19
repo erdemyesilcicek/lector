@@ -1,5 +1,4 @@
-// lib/features/explore/explore_screen.dart
-
+import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 
@@ -40,7 +39,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               _buildSectionTitle('Trending Now'),
               const SizedBox(height: 12),
               _buildHorizontalBookList(),
-              
+
               const SizedBox(height: 24),
 
               // --- NEW RELEASES SECTION ---
@@ -58,10 +57,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
 
@@ -77,9 +73,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
           return BookCard(
             title: 'Dune',
             author: 'Frank Herbert',
-            coverUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
+            coverUrl:
+                'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
             onTap: () {
-              // TODO: Navigate to book detail screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookDetailScreen(
+                    // Pass the book data to the detail screen
+                    title: 'Dune',
+                    author: 'Frank Herbert',
+                    coverUrl:
+                        'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1555447414l/44767458.jpg',
+                  ),
+                ),
+              );
             },
           );
         },
