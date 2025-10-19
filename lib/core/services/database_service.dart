@@ -34,8 +34,6 @@ class DatabaseService {
   // We will implement the "add to exhibition" method in the next steps
   // when we create the rating screen.
 
-  // lib/core/services/database_service.dart dosyasının içine
-
   // Add a book to the user's exhibition (read books)
   Future<void> addBookToExhibition(Book book, int rating, String notes) async {
     if (_userId == null) return;
@@ -56,8 +54,6 @@ class DatabaseService {
       'notes': notes,
     });
   }
-
-  // lib/core/services/database_service.dart dosyasının içine
 
   // Get a live stream of the user's reading list
   Stream<List<Book>> getReadingListStream() {
@@ -86,8 +82,6 @@ class DatabaseService {
     });
   }
 
-  // lib/core/services/database_service.dart dosyasının içine
-
   // Get a live stream of the user's exhibition
   Stream<List<ExhibitionBook>> getExhibitionStream() {
     if (_userId == null) {
@@ -106,5 +100,18 @@ class DatabaseService {
         return ExhibitionBook.fromDoc(doc.data(), doc.id);
       }).toList();
     });
+  }
+
+  // Delete a book from the user's reading list
+  Future<void> deleteFromReadingList(String bookId) async {
+    if (_userId == null) return;
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('reading_list')
+        .doc(bookId);
+
+    await docRef.delete();
   }
 }
