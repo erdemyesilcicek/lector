@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/book_service.dart';
-import 'package:lector/core/services/database_service.dart'; // DatabaseService'i import et
+import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 
@@ -16,34 +16,31 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   final BookService _bookService = BookService();
-  final DatabaseService _databaseService = DatabaseService(); // DatabaseService'i ekle
+  final DatabaseService _databaseService = DatabaseService();
   final _searchController = TextEditingController();
   
-  late Future<List<Book>> _trendingBooksFuture;
+  // DÜZELTME: Artık 'late' değil ve tek bir Future'ımız var.
+  Future<List<Book>>? _trendingBooksFuture; 
   List<Book>? _searchResults;
   bool _isLoading = false;
-  Set<String> _readBookIds = {}; // Okunan kitap ID'lerini tutacak set
 
   @override
   void initState() {
     super.initState();
-    // Önce okunan kitapları yükle, sonra trendleri getir
-    _initializeScreen();
+    // Yükleme işlemini initState içinde başlatıyoruz.
+    _trendingBooksFuture = _loadInitialData();
   }
 
-  Future<void> _initializeScreen() async {
-    _readBookIds = await _databaseService.getReadBookIds();
-    setState(() {
-      _trendingBooksFuture = _fetchTrendingBooks();
-    });
-  }
-
-  Future<List<Book>> _fetchTrendingBooks() async {
+  // DÜZELTME: Tüm başlangıç verisini yükleyen tek bir metot.
+  Future<List<Book>> _loadInitialData() async {
+    // Önce okunan kitapların ID'lerini al
+    final readBookIds = await _databaseService.getReadBookIds();
+    // Sonra trend olan kitapları al
     final booksJson = await _bookService.fetchTrendingBooks();
-    // Okunmamış kitapları filtrele
+    // Okunmamış olanları filtreleyip geri döndür
     return booksJson
         .map((json) => Book.fromJson(json))
-        .where((book) => !_readBookIds.contains(book.id))
+        .where((book) => !readBookIds.contains(book.id))
         .toList();
   }
 
@@ -54,15 +51,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
       });
       return;
     }
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() { _isLoading = true; });
+    
+    // Aramadan önce de okunan kitapları kontrol edelim
+    final readBookIds = await _databaseService.getReadBookIds();
     final booksJson = await _bookService.searchBooks(query);
+    
     setState(() {
-      // Okunmamış kitapları filtrele
       _searchResults = booksJson
           .map((json) => Book.fromJson(json))
-          .where((book) => !_readBookIds.contains(book.id))
+          .where((book) => !readBookIds.contains(book.id))
           .toList();
       _isLoading = false;
     });
@@ -74,12 +72,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     super.dispose();
   }
   
-  // build ve diğer yardımcı metotlar aynı kalacak...
-  // ... (build, _buildDefaultContent, _buildSearchResults, etc.)
-  // ... KODUN GERİ KALANINI DEĞİŞTİRMENE GEREK YOK ...
+  // KODUN GERİ KALANI AYNI
+  // ... build, _buildDefaultContent, _buildSearchResults, etc. ...
   @override
   Widget build(BuildContext context) {
-    // Determine if we should show search results or the default content
     final bool isSearching = _searchResults != null;
 
     return Scaffold(
@@ -89,7 +85,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- SEARCH BAR ---
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
@@ -102,12 +97,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   filled: true,
                   fillColor: Colors.grey.shade200,
                 ),
-                // This triggers the search when the user submits
                 onSubmitted: _performSearch,
               ),
               const SizedBox(height: 24),
               
-              // --- DYNAMIC CONTENT AREA ---
               Expanded(
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -129,7 +122,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         children: [
           _buildSectionTitle('Trending Now'),
           const SizedBox(height: 12),
-          _buildHorizontalBookList(_trendingBooksFuture),
+          _buildHorizontalBookList(_trendingBooksFuture!),
         ],
       ),
     );
@@ -139,7 +132,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (_searchResults!.isEmpty) {
       return const Center(child: Text('No new books found.'));
     }
-    // A vertical list for search results
     return ListView.builder(
       itemCount: _searchResults!.length,
       itemBuilder: (context, index) {
