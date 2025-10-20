@@ -153,43 +153,76 @@ class DatabaseService {
     }).toList();
   }
 
-  // Get book recommendations based on user's exhibition
+  // lib/core/services/database_service.dart dosyasının içine
+
   Future<List<Book>> getRecommendations() async {
-    // 1. Kullanıcının okuduğu ve yüksek puan verdiği kitapları al
+    // 1. ANALİZ: Kullanıcının tüm sergisini al
     final exhibition = await getExhibitionBooks();
-    if (exhibition.isEmpty) return [];
+    if (exhibition.length < 3) return []; // Yeterli veri yoksa boş liste dön
 
-    // 4 veya 5 yıldız verilmiş kitapları filtrele
-    final highRatedBooks = exhibition.where((b) => b.rating >= 4).toList();
-    if (highRatedBooks.isEmpty) return [];
+    // 2. PUANLAMA: Türler ve yazarlar için lezzet puanları oluştur
+    final genreScores = <String, int>{};
+    final authorScores = <String, int>{};
 
-    // 2. Analiz için bir "tohum" (seed) seç
-    // En son eklenen yüksek puanlı kitabın ilk türünü tohum olarak alalım (basit bir başlangıç)
-    highRatedBooks.shuffle(); // Biraz rastgelelik katalım
-    final seedBook = highRatedBooks.first;
-    if (seedBook.genres.isEmpty) return [];
-    final seedGenre = seedBook.genres.first;
+    for (var book in exhibition) {
+      int score = 0;
+      if (book.rating == 5) score = 3;
+      if (book.rating == 4) score = 2;
+      if (book.rating == 3) score = 1;
+      if (book.rating <= 2) score = -2;
 
-    // 3. Google Books API'sinde bu türe göre yeni kitaplar ara
-    final bookService = BookService(); // BookService'i burada kullanıyoruz
-    final searchResultsJson = await bookService.searchBooks(
-      'subject:${seedGenre}',
-    );
+      for (var genre in book.genres) {
+        genreScores[genre] = (genreScores[genre] ?? 0) + score;
+      }
+      authorScores[book.author] = (authorScores[book.author] ?? 0) + score;
+    }
 
-    // 4. Sonuçları filtrele: Kullanıcının zaten okuduğu veya listesine eklediği kitapları çıkar
+    // 3. PROFİL ÇIKARMA: En yüksek puanlı türleri ve yazarları bul
+    // Puanı 0'dan büyük olanları alıp puanlarına göre sırala
+    var sortedGenres = genreScores.entries.where((e) => e.value > 0).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    var sortedAuthors = authorScores.entries.where((e) => e.value > 0).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Eğer hiç pozitif puanlı tür yoksa boş liste dön
+    if (sortedGenres.isEmpty) return [];
+
+    // En iyi 2 türü ve en iyi 1 yazarı al (varsa)
+    final topGenres = sortedGenres.take(2).map((e) => e.key).toList();
+    final topAuthor = sortedAuthors.isNotEmpty ? sortedAuthors.first.key : null;
+
+    // 4. AKILLI SORGULAMA
+    // Örn: subject:"Science Fiction" OR subject:"History"
+    final genreQuery = topGenres.map((g) => 'subject:"$g"').join(' OR ');
+    // Örn: inauthor:"Frank Herbert"
+    final authorQuery = topAuthor != null ? ' inauthor:"$topAuthor"' : '';
+
+    final finalQuery = '($genreQuery)$authorQuery';
+
+    // 5. TAZELİK KAT & FİLTRELE
+    final bookService = BookService();
+    // Sorguyu en yeniye göre sıralayarak gönderiyoruz!
+    final searchResultsJson = await bookService.searchBooks('$finalQuery&orderBy=newest');
+
     final allReadBookIds = exhibition.map((b) => b.id).toSet();
-    final readingList = await getReadingListStream().first; // Anlık listeyi al
+    final readingList = await getReadingListStream().first;
     final readingListIds = readingList.map((b) => b.id).toSet();
 
-    final recommendations = searchResultsJson
-        .map((json) => Book.fromJson(json))
-        .where((book) {
-          final hasRead = allReadBookIds.contains(book.id);
-          final isOnList = readingListIds.contains(book.id);
-          return !hasRead &&
-              !isOnList; // Henüz okunmamış ve listede olmayanları al
-        })
-        .toList();
+    final recommendations = searchResultsJson.map((json) => Book.fromJson(json)).where((book) {
+      final hasRead = allReadBookIds.contains(book.id);
+      final isOnList = readingListIds.contains(book.id);
+      return !hasRead && !isOnList;
+    }).toList();
+    
+    // Eğer sonuç yoksa, sadece en iyi türe göre tekrar ara (garanti sonuç için)
+    if (recommendations.isEmpty) {
+      final fallbackJson = await bookService.searchBooks('subject:"${topGenres.first}"&orderBy=newest');
+      return fallbackJson.map((json) => Book.fromJson(json)).where((book) {
+        final hasRead = allReadBookIds.contains(book.id);
+        final isOnList = readingListIds.contains(book.id);
+        return !hasRead && !isOnList;
+      }).toList();
+    }
 
     return recommendations;
   }
