@@ -158,7 +158,7 @@ class DatabaseService {
   Future<List<Book>> getRecommendations() async {
     // 1. ANALİZ: Kullanıcının tüm sergisini al
     final exhibition = await getExhibitionBooks();
-    if (exhibition.length < 3) return []; // Yeterli veri yoksa boş liste dön
+    if (exhibition.length < 3) return [];
 
     // 2. PUANLAMA: Türler ve yazarlar için lezzet puanları oluştur
     final genreScores = <String, int>{};
@@ -177,54 +177,65 @@ class DatabaseService {
       authorScores[book.author] = (authorScores[book.author] ?? 0) + score;
     }
 
-    // 3. PROFİL ÇIKARMA: En yüksek puanlı türleri ve yazarları bul
-    // Puanı 0'dan büyük olanları alıp puanlarına göre sırala
+    // 3. PROFİL ÇIKARMA: En yüksek puanlıları bul
     var sortedGenres = genreScores.entries.where((e) => e.value > 0).toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     var sortedAuthors = authorScores.entries.where((e) => e.value > 0).toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    // Eğer hiç pozitif puanlı tür yoksa boş liste dön
     if (sortedGenres.isEmpty) return [];
 
-    // En iyi 2 türü ve en iyi 1 yazarı al (varsa)
-    final topGenres = sortedGenres.take(2).map((e) => e.key).toList();
+    // 4. "DENGELİ PORTFÖY" SORGULARI OLUŞTURMA
+    final bookService = BookService();
+    final topGenre = sortedGenres.first.key;
     final topAuthor = sortedAuthors.isNotEmpty ? sortedAuthors.first.key : null;
 
-    // 4. AKILLI SORGULAMA
-    // Örn: subject:"Science Fiction" OR subject:"History"
-    final genreQuery = topGenres.map((g) => 'subject:"$g"').join(' OR ');
-    // Örn: inauthor:"Frank Herbert"
-    final authorQuery = topAuthor != null ? ' inauthor:"$topAuthor"' : '';
+    // Sorgu 1: En sevdiği türde, farklı yazarlardan yeni kitaplar
+    final genreSearchFuture = bookService.searchBooks(
+      'subject:"$topGenre"&orderBy=newest',
+    );
 
-    final finalQuery = '($genreQuery)$authorQuery';
+    // Sorgu 2: En sevdiği yazarın, farklı kitapları (eğer varsa)
+    final authorSearchFuture = topAuthor != null
+        ? bookService.searchBooks('inauthor:"$topAuthor"&orderBy=newest')
+        : Future.value([]); // Yazar yoksa boş bir future
 
-    // 5. TAZELİK KAT & FİLTRELE
-    final bookService = BookService();
-    // Sorguyu en yeniye göre sıralayarak gönderiyoruz!
-    final searchResultsJson = await bookService.searchBooks('$finalQuery&orderBy=newest');
+    // İki sorguyu aynı anda çalıştırarak zaman kazan
+    final results = await Future.wait([genreSearchFuture, authorSearchFuture]);
+    final genreResultsJson = results[0];
+    final authorResultsJson = results[1];
 
+    // 5. SONUÇLARI BİRLEŞTİR, FİLTRELE VE ÇEŞİTLENDİR
     final allReadBookIds = exhibition.map((b) => b.id).toSet();
     final readingList = await getReadingListStream().first;
     final readingListIds = readingList.map((b) => b.id).toSet();
 
-    final recommendations = searchResultsJson.map((json) => Book.fromJson(json)).where((book) {
-      final hasRead = allReadBookIds.contains(book.id);
-      final isOnList = readingListIds.contains(book.id);
-      return !hasRead && !isOnList;
-    }).toList();
-    
-    // Eğer sonuç yoksa, sadece en iyi türe göre tekrar ara (garanti sonuç için)
-    if (recommendations.isEmpty) {
-      final fallbackJson = await bookService.searchBooks('subject:"${topGenres.first}"&orderBy=newest');
-      return fallbackJson.map((json) => Book.fromJson(json)).where((book) {
+    // Sonuçları Book nesnelerine çevir ve okunmuş/listede olanları filtrele
+    final filter = (List<dynamic> jsonList) {
+      return jsonList.map((json) => Book.fromJson(json)).where((book) {
         final hasRead = allReadBookIds.contains(book.id);
         final isOnList = readingListIds.contains(book.id);
         return !hasRead && !isOnList;
-      }).toList();
+      });
+    };
+
+    final genreRecommendations = filter(genreResultsJson);
+    final authorRecommendations = filter(authorResultsJson);
+
+    // Tekrarları önlemek için bir Map kullanarak iki listeyi birleştir
+    final uniqueRecommendations = <String, Book>{};
+    for (var book in genreRecommendations) {
+      uniqueRecommendations[book.id] = book;
+    }
+    for (var book in authorRecommendations) {
+      uniqueRecommendations[book.id] = book;
     }
 
-    return recommendations;
+    // Son listeyi karıştırarak çeşitliliği artır
+    final finalRecommendations = uniqueRecommendations.values.toList()
+      ..shuffle();
+
+    return finalRecommendations;
   }
 
   // Check if a specific book is in the reading list (live)
