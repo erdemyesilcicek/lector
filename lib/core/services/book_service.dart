@@ -6,41 +6,66 @@ import 'package:http/http.dart' as http;
 class BookService {
   final String _baseUrl = 'https://www.googleapis.com/books/v1/volumes';
 
-  // Fetch trending books (we'll use a general query like "flutter development" for now)
-  // TODO: Replace with a better query for "trending" books
-  Future<List<dynamic>> fetchTrendingBooks() async {
+  // "Trending" yerine artık "En Yeni ve Dikkate Değer" kitapları çekiyoruz
+  Future<List<dynamic>> fetchNewAndNotable() async {
     try {
-      // The query 'subject:fiction' gets a list of general fiction books
-      final response = await http.get(Uri.parse('$_baseUrl?q=subject:fiction&maxResults=10'));
+      // 'a' gibi genel bir terimle arama yapıp en yeniye göre sıralıyoruz.
+      // Bu bize çeşitli türlerden en yeni kitapları getirir.
+      final response = await http.get(Uri.parse('$_baseUrl?q=a&orderBy=newest&maxResults=10'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // The API returns a map, and the books are in the 'items' key
-        return data['items'] ?? []; 
+        return data['items'] ?? [];
       } else {
-        // If the server did not return a 200 OK response,
-        // then throw an exception.
-        throw Exception('Failed to load books');
+        throw Exception('Failed to load new books');
       }
     } catch (e) {
-      print('Error fetching trending books: $e');
-      return []; // Return an empty list on error
+      print('Error fetching new books: $e');
+      return [];
     }
   }
 
-  // lib/core/services/book_service.dart dosyasının içine
+  // Fetch New York Times bestsellers
+  Future<List<dynamic>> fetchNytBestsellers() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl?q="new york times best sellers"&maxResults=10'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['items'] ?? [];
+      } else {
+        throw Exception('Failed to load bestsellers');
+      }
+    } catch (e) {
+      print('Error fetching bestsellers: $e');
+      return [];
+    }
+  }
+
+  // Fetch books by a specific genre
+  Future<List<dynamic>> fetchBooksByGenre(String genre) async {
+    try {
+      final encodedGenre = Uri.encodeComponent(genre);
+      final response = await http.get(Uri.parse('$_baseUrl?q=subject:$encodedGenre&maxResults=10'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['items'] ?? [];
+      } else {
+        throw Exception('Failed to load genre: $genre');
+      }
+    } catch (e) {
+      print('Error fetching genre $genre: $e');
+      return [];
+    }
+  }
 
   // Search for books using a query
   Future<List<dynamic>> searchBooks(String query) async {
     if (query.isEmpty) {
-      return []; // Return empty list if query is empty
+      return [];
     }
-
     try {
-      // Encode the query to handle spaces and special characters
       final encodedQuery = Uri.encodeComponent(query);
       final response = await http.get(Uri.parse('$_baseUrl?q=$encodedQuery&maxResults=20'));
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['items'] ?? [];
