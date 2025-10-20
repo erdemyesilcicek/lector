@@ -107,6 +107,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     final bool hasRealCover = !book.coverUrl.contains('i.imgur.com/J5LVHEL.png');
 
     return Card(
+      color: AppColors.surface,
       margin: const EdgeInsets.only(
           top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       elevation: 3,

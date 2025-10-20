@@ -12,7 +12,7 @@ class AppColors {
   static const Color accent = Color(0xFFD4AF37); // Antik Altın/Amber (Yıldızlar, vurgular)
 
   // Nötr Renkler
-  static const Color background = Color(0xFFF5F5DC); // Bej/Krem (Ana arka plan)
+  static const Color background = Color.fromARGB(255, 255, 251, 248); 
   static const Color surface = Color(0xFFFFFFFF); // Beyaz (Kartlar, paneller)
   
   // Metin Renkleri

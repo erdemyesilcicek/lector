@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:lector/core/models/book_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookService {
   final String _baseUrl = 'https://www.googleapis.com/books/v1/volumes';
@@ -25,6 +27,40 @@ class BookService {
     } catch (e) {
       print('Error fetching new books: $e');
       return [];
+    }
+  }
+
+  Future<Book?> fetchBookOfTheDay() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().substring(0, 10); // "2025-10-21" formatı
+
+    final storedDate = prefs.getString('book_of_the_day_date');
+    final storedBookJson = prefs.getString('book_of_the_day_data');
+
+    // 1. Hafızayı Kontrol Et: Tarih aynı mı ve kitap var mı?
+    if (storedDate == today && storedBookJson != null) {
+      print("Fetching Book of the Day from CACHE.");
+      return Book.fromJson(json.decode(storedBookJson));
+    }
+
+    // 2. Hafıza boş veya eskiyse: API'den yeni kitap çek
+    print("Fetching Book of the Day from API.");
+    try {
+      final bestsellersJson = await fetchNytBestsellers();
+      if (bestsellersJson.isEmpty) return null;
+
+      bestsellersJson.shuffle();
+      final bookJson = bestsellersJson.first;
+      final newBook = Book.fromJson(bookJson);
+
+      // 3. Yeni kitabı ve bugünün tarihini hafızaya kaydet
+      await prefs.setString('book_of_the_day_date', today);
+      await prefs.setString('book_of_the_day_data', json.encode(newBook.toJson()));
+
+      return newBook;
+    } catch (e) {
+      print('Error fetching Book of the Day: $e');
+      return null;
     }
   }
 

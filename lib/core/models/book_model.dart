@@ -35,4 +35,17 @@ class Book {
       genres: categories,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'volumeInfo': {
+        'title': title,
+        'authors': [author],
+        'description': summary,
+        'categories': genres,
+        'imageLinks': {'thumbnail': coverUrl},
+      },
+    };
+  }
 }
