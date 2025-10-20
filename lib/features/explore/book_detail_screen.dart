@@ -50,7 +50,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.black.withOpacity(0.7)), // Karartma efekti artırıldı
+              child: Container(color: Colors.black.withOpacity(0.7)),
             ),
           ),
           SafeArea(
@@ -122,7 +122,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // --- YENİDEN TASARLANMIŞ BUTONLAR ---
   Widget _buildActionButtons(Book book, bool isInReadingList) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -188,75 +187,112 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       ],
     );
   }
-  
-  // --- YENİDEN TASARLANMIŞ BİLGİ ALANI ---
+
+  // --- "MANYAK" HALE GETİRİLMİŞ YENİ METOT ---
   Widget _buildExhibitionDetails(ExhibitionBook exhibitionBook) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Text('Your Rating:', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary)),
-            const SizedBox(width: AppConstants.paddingSmall),
-            ...List.generate(5, (index) {
-              return Icon(
-                index < exhibitionBook.rating ? Icons.star : Icons.star_border,
-                color: AppColors.accent,
-                size: 24,
-              );
-            }),
-            const Spacer(),
-            IconButton(
-              onPressed: () async {
-                final result = await showModalBottomSheet<Map<String, dynamic>>(
-                  context: context,
-                  builder: (context) => RatingModal(
-                    initialRating: exhibitionBook.rating,
-                    initialNotes: exhibitionBook.notes,
-                  ),
-                  isScrollControlled: true,
-                );
-                if (result != null && mounted) {
-                  final int newRating = result['rating'];
-                  final String newNotes = result['notes'];
-                  await _databaseService.updateExhibitionBook(
-                      exhibitionBook.id, newRating, newNotes);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Your rating has been updated!')),
-                  );
-                }
-              },
-              icon: const Icon(Icons.edit, color: AppColors.textSecondary),
-            )
-          ],
+    // "Düzenle" butonuna tıklandığında çalışacak fonksiyon
+    void openEditModal() async {
+      final result = await showModalBottomSheet<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => RatingModal(
+          initialRating: exhibitionBook.rating,
+          initialNotes: exhibitionBook.notes,
         ),
+        isScrollControlled: true,
+      );
+      if (result != null && mounted) {
+        final int newRating = result['rating'];
+        final String newNotes = result['notes'];
+        await _databaseService.updateExhibitionBook(
+            exhibitionBook.id, newRating, newNotes);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Your rating has been updated!')),
+        );
+      }
+    }
+    
+    return Column(
+      children: [
+        // RATING BÖLÜMÜ
+        Material(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+          child: InkWell(
+            onTap: openEditModal, // Düzenleme modal'ını aç
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium, vertical: AppConstants.paddingSmall),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: AppColors.accent, size: 20),
+                      const SizedBox(width: AppConstants.paddingSmall),
+                      Text('Your Rating', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      ...List.generate(5, (index) {
+                        return Icon(
+                          index < exhibitionBook.rating ? Icons.star_rounded : Icons.star_border_rounded,
+                          color: AppColors.accent,
+                          size: 24,
+                        );
+                      }),
+                      const SizedBox(width: AppConstants.paddingSmall),
+                      const Icon(Icons.edit, color: AppColors.textSecondary, size: 18),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+        // NOT BÖLÜMÜ (Eğer not varsa gösterilir)
         if (exhibitionBook.notes.isNotEmpty) ...[
-          const SizedBox(height: AppConstants.paddingSmall),
-          Text(
-            'Your Notes:',
-            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: AppConstants.paddingSmall),
-          Text(
-            exhibitionBook.notes,
-            style: AppTextStyles.bodyLarge.copyWith(fontStyle: FontStyle.italic, color: AppColors.primary),
-          ),
+          const SizedBox(height: AppConstants.paddingMedium),
+          Material(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+            child: InkWell(
+              onTap: openEditModal,
+              borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.notes_rounded, color: AppColors.textSecondary, size: 20),
+                    const SizedBox(width: AppConstants.paddingSmall),
+                    Expanded(
+                      child: Text(
+                        exhibitionBook.notes,
+                        style: AppTextStyles.bodyLarge.copyWith(fontStyle: FontStyle.italic, color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
         ],
         const SizedBox(height: AppConstants.paddingLarge),
-        Center(
-          child: TextButton.icon(
-            onPressed: () async {
-              await _databaseService.deleteFromExhibition(exhibitionBook.id);
-              if (mounted) {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${exhibitionBook.title} removed from Exhibition.')),
-                );
-              }
-            },
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Remove from Exhibition'),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+        // REMOVE BUTONU (Daha az dikkat çekici)
+        TextButton(
+          onPressed: () async {
+            await _databaseService.deleteFromExhibition(exhibitionBook.id);
+            if (mounted) {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${exhibitionBook.title} removed from Exhibition.')),
+              );
+            }
+          },
+          child: Text(
+            'Remove from Exhibition',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
           ),
         ),
       ],
