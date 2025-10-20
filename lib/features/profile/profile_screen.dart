@@ -1,9 +1,11 @@
 // lib/features/profile/profile_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/profile/recommendations_screen.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -76,9 +78,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-      ),
+      appBar: CustomAppBar(title:'Profile'),
+      backgroundColor: AppColors.background,
       body: FutureBuilder<Map<String, dynamic>>(
         future: _statsFuture,
         builder: (context, snapshot) {

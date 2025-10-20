@@ -1,11 +1,13 @@
 // lib/features/exhibition/exhibition_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 
 class ExhibitionScreen extends StatefulWidget {
   const ExhibitionScreen({super.key});
@@ -20,7 +22,8 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Exhibition')),
+      appBar: CustomAppBar(title:'My Exhibition'),
+      backgroundColor: AppColors.background,
       body: StreamBuilder<List<ExhibitionBook>>(
         stream: _databaseService.getExhibitionStream(),
         builder: (context, snapshot) {

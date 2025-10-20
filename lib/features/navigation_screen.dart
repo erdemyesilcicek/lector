@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/features/explore/explore_screen.dart';
 import 'package:lector/features/profile/profile_screen.dart';
 import 'package:lector/features/reading_list/reading_list_screen.dart';
@@ -32,6 +33,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens.elementAt(_selectedIndex),
+      backgroundColor: AppColors.background,
       bottomNavigationBar: BottomNavigationBar(
         // This makes the icons always visible with their labels
         type: BottomNavigationBarType.fixed, 
@@ -61,6 +63,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         onTap: _onItemTapped,
         unselectedItemColor: Colors.grey.shade600,
         selectedItemColor: Colors.brown,
+        backgroundColor: AppColors.background,
       ),
     );
   }

@@ -1,9 +1,11 @@
 // lib/features/profile/recommendations_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -25,9 +27,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Smart Recommendations'),
-      ),
+      appBar: CustomAppBar(title:'Recommendations'),
+      backgroundColor: AppColors.background,
       body: FutureBuilder<List<Book>>(
         future: _recommendationsFuture,
         builder: (context, snapshot) {

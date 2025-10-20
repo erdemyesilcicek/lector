@@ -1,9 +1,13 @@
 // lib/features/reading_list/reading_list_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
+import 'package:lector/core/constants/app_constants.dart';
+import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/rating_modal_widget.dart';
 
 class ReadingListScreen extends StatefulWidget {
@@ -19,7 +23,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Reading List')),
+      appBar: CustomAppBar(title: 'My Reading List'),
+      backgroundColor: AppColors.background, // Arka plan rengini tema'dan al
       body: StreamBuilder<List<Book>>(
         stream: _databaseService.getReadingListStream(),
         builder: (context, snapshot) {
@@ -29,71 +34,65 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
           if (snapshot.hasError) {
             return Center(child: Text('An error occurred: ${snapshot.error}'));
           }
+          // --- Geliştirilmiş Boş Durum Ekranı ---
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text(
-                'Your reading list is empty.\nAdd books from the Explore tab!',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.bookmark_border_rounded,
+                      size: 80,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    Text(
+                      'Your Reading List is Empty',
+                      style: AppTextStyles.headline3,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppConstants.paddingSmall),
+                    Text(
+                      'Add books from the Explore tab to see them here.',
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           final readingList = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(AppConstants.paddingMedium), // Liste etrafında boşluk
             itemCount: readingList.length,
             itemBuilder: (context, index) {
               final book = readingList[index];
-              // Use Dismissible to add swipe actions
               return Dismissible(
-                key: Key(book.id), // Unique key for each item
-                background:
-                    _buildSwipeActionRight(), // Sağa kaydırınca (Left to Right) bu görünür
-                secondaryBackground:
-                    _buildSwipeActionLeft(), // Sola kaydırınca (Right to Left) bu görünür
-                // This function is called when a swipe is completed
+                key: Key(book.id),
+                background: _buildSwipeActionRight(),
+                secondaryBackground: _buildSwipeActionLeft(),
                 onDismissed: (direction) async {
                   if (direction == DismissDirection.endToStart) {
-                    // Swiped Left (Delete)
                     await _databaseService.deleteFromReadingList(book.id);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${book.title} removed from list.'),
-                      ),
+                      SnackBar(content: Text('${book.title} removed from list.')),
                     );
                   }
                 },
-
-                // This function allows us to intercept a swipe before it completes
                 confirmDismiss: (direction) async {
                   if (direction == DismissDirection.startToEnd) {
-                    // Swiped Right (Mark as Read)
                     await _markAsRead(book);
-                    return false; // Don't actually dismiss, we handle removal manually
+                    return false;
                   }
-                  // For delete, return true to allow the dismiss
                   return true;
                 },
-
-                child: ListTile(
-                  leading: Image.network(
-                    book.coverUrl,
-                    fit: BoxFit.cover,
-                    width: 50,
-                    height: 80,
-                  ),
-                  title: Text(book.title),
-                  subtitle: Text(book.author),
-                  onTap: () {
-                    // Navigate to detail screen when tapped
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookDetailScreen(book: book),
-                      ),
-                    );
-                  },
-                ),
+                // --- YENİ KART TASARIMI ---
+                child: _buildBookListItem(book),
               );
             },
           );
@@ -102,8 +101,77 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     );
   }
 
-  // Helper method to show the rating modal and handle the logic
+  // --- YENİ WIDGET: Kitap Kartı Tasarımı ---
+  Widget _buildBookListItem(Book book) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BookDetailScreen(book: book)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingSmall),
+          child: Row(
+            children: [
+              // Kitap Kapağı
+              Container(
+                width: 70,
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    )
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  child: Image.network(book.coverUrl, fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: AppConstants.paddingMedium),
+              // Kitap Bilgileri
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      book.title,
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppConstants.paddingSmall),
+                    Text(
+                      book.author,
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _markAsRead(Book book) async {
+    // ... Bu metodun içeriği aynı kalıyor ...
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       builder: (context) => const RatingModal(),
@@ -114,9 +182,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
       final int rating = result['rating'];
       final String notes = result['notes'];
 
-      // 1. Add to exhibition
       await _databaseService.addBookToExhibition(book, rating, notes);
-      // 2. Remove from reading list
       await _databaseService.deleteFromReadingList(book.id);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,41 +191,39 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
-  // UI for the swipe right background (Mark as Read)
   Widget _buildSwipeActionRight() {
+    // ... Bu metodun içeriği aynı kalıyor ...
     return Container(
-      color: Colors.green, // Green for "Mark as Read"
-      alignment: Alignment.centerLeft, // Align content to the left
+      decoration: BoxDecoration(
+        color: AppColors.success,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+      ),
+      alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
-        // Icon and text are at the start of the row
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(Icons.check_circle, color: Colors.white),
           SizedBox(width: 10),
-          Text(
-            'Mark as Read',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          Text('Mark as Read', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  // UI for the swipe left background (Remove)
   Widget _buildSwipeActionLeft() {
+    // ... Bu metodun içeriği aynı kalıyor ...
     return Container(
-      color: Colors.red, // Red for "Remove"
-      alignment: Alignment.centerRight, // Align content to the right
+      decoration: BoxDecoration(
+        color: AppColors.error,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+      ),
+      alignment: Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Row(
-        // Icon and text are at the end of the row
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            'Remove',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           SizedBox(width: 10),
           Icon(Icons.delete, color: Colors.white),
         ],

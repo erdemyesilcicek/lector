@@ -1,11 +1,14 @@
 // lib/features/explore/explore_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:lector/core/constants/app_colors.dart';
+import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/book_service.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -79,54 +82,69 @@ class _ExploreScreenState extends State<ExploreScreen> {
     super.dispose();
   }
 
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+  // --- GÜNCELLENEN AppBar OLUŞTURMA METODU ---
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
       child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 350),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
         child: _isSearchOpen
-            ? Row(
-                key: const ValueKey('searchBar'),
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        hintText: 'Search...',
-                        border: InputBorder.none,
-                      ),
-                      onSubmitted: _performSearch,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      setState(() {
-                        _isSearchOpen = false;
-                        _searchResults = null;
-                        _searchController.clear();
-                      });
-                    },
-                  ),
-                ],
-              )
-            : Row(
-                key: const ValueKey('titleBar'),
-                children: [
-                  const Text('Lector', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () {
-                      setState(() {
-                        _isSearchOpen = true;
-                      });
-                    },
-                  ),
-                ],
-              ),
+            ? _buildSearchBar() // Arama açıkken gösterilecek AppBar
+            : _buildTitleBar(),  // Normal durumda gösterilecek AppBar
       ),
+    );
+  }
+
+  // YENİ: Başlığı gösteren standart AppBar
+  Widget _buildTitleBar() {
+    return CustomAppBar(
+      key: const ValueKey('titleBar'), // Animasyon için anahtar
+      title: 'Lector',
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search, color: AppColors.primary),
+          onPressed: () {
+            setState(() { _isSearchOpen = true; });
+          },
+        ),
+      ],
+    );
+  }
+
+  // YENİ: Arama çubuğunu gösteren AppBar
+  Widget _buildSearchBar() {
+    return AppBar(
+      key: const ValueKey('searchBar'), // Animasyon için anahtar
+      leading: null, // Geri butonunu kaldır
+      automaticallyImplyLeading: false,
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      title: TextField(
+        controller: _searchController,
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: 'Search books or authors...',
+          hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          border: InputBorder.none,
+        ),
+        style: AppTextStyles.bodyLarge,
+        onSubmitted: _performSearch,
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.close, color: AppColors.primary),
+          onPressed: () {
+            setState(() {
+              _isSearchOpen = false;
+              _searchResults = null;
+              _searchController.clear();
+            });
+          },
+        ),
+      ],
     );
   }
 
@@ -135,21 +153,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final bool isSearching = _searchResults != null;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : isSearching
-                      ? _buildSearchResults()
-                      : _buildDefaultContent(),
-            ),
-          ],
-        ),
-      ),
+      // Scaffold'un kendi AppBar'ını kullanıyoruz
+      appBar: _buildAppBar(), 
+      backgroundColor: AppColors.background,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : isSearching
+              ? _buildSearchResults()
+              : _buildDefaultContent(),
     );
   }
 
