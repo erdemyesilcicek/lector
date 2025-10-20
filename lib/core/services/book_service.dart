@@ -9,9 +9,12 @@ class BookService {
   // "Trending" yerine artık "En Yeni ve Dikkate Değer" kitapları çekiyoruz
   Future<List<dynamic>> fetchNewAndNotable() async {
     try {
-      // 'a' gibi genel bir terimle arama yapıp en yeniye göre sıralıyoruz.
-      // Bu bize çeşitli türlerden en yeni kitapları getirir.
-      final response = await http.get(Uri.parse('$_baseUrl?q=a&orderBy=newest&maxResults=10'));
+      // YENİ VE AKILLI YAKLAŞIM: İçinde bulunduğumuz yılı dinamik olarak al
+      final currentYear = DateTime.now().year;
+
+      // Sorguyu, içinde bu yılın geçtiği kitapları arayacak şekilde güncelliyoruz.
+      // Bu, bize gerçekten yeni çıkmış kitapları bulma olasılığını çok artırır.
+      final response = await http.get(Uri.parse('$_baseUrl?q=inpublisher:$currentYear&maxResults=15'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -23,8 +23,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'My Reading List'),
-      backgroundColor: AppColors.background, // Arka plan rengini tema'dan al
+      appBar: const CustomAppBar(title: 'My Reading List'),
+      backgroundColor: AppColors.background,
       body: StreamBuilder<List<Book>>(
         stream: _databaseService.getReadingListStream(),
         builder: (context, snapshot) {
@@ -34,7 +34,6 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
           if (snapshot.hasError) {
             return Center(child: Text('An error occurred: ${snapshot.error}'));
           }
-          // --- Geliştirilmiş Boş Durum Ekranı ---
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Padding(
@@ -42,22 +41,13 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.bookmark_border_rounded,
-                      size: 80,
-                      color: AppColors.textSecondary,
-                    ),
+                    const Icon(Icons.bookmark_border_rounded, size: 80, color: AppColors.textSecondary),
                     const SizedBox(height: AppConstants.paddingMedium),
-                    Text(
-                      'Your Reading List is Empty',
-                      style: AppTextStyles.headline3,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text('Your Reading List is Empty', style: AppTextStyles.headline3, textAlign: TextAlign.center),
                     const SizedBox(height: AppConstants.paddingSmall),
                     Text(
                       'Add books from the Explore tab to see them here.',
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -67,8 +57,10 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
           }
 
           final readingList = snapshot.data!;
+          // ListView'in padding'ini buradan alıp kartlara verdik,
+          // böylece kaydırma arka planı tam genişlikte olabilir.
           return ListView.builder(
-            padding: const EdgeInsets.all(AppConstants.paddingMedium), // Liste etrafında boşluk
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium, vertical: AppConstants.paddingSmall),
             itemCount: readingList.length,
             itemBuilder: (context, index) {
               final book = readingList[index];
@@ -91,7 +83,6 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                   }
                   return true;
                 },
-                // --- YENİ KART TASARIMI ---
                 child: _buildBookListItem(book),
               );
             },
@@ -101,10 +92,9 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     );
   }
 
-  // --- YENİ WIDGET: Kitap Kartı Tasarımı ---
   Widget _buildBookListItem(Book book) {
     return Card(
-      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
+      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
@@ -121,7 +111,6 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
           padding: const EdgeInsets.all(AppConstants.paddingSmall),
           child: Row(
             children: [
-              // Kitap Kapağı
               Container(
                 width: 70,
                 height: 100,
@@ -142,7 +131,6 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                 ),
               ),
               const SizedBox(width: AppConstants.paddingMedium),
-              // Kitap Bilgileri
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +159,6 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   }
 
   Future<void> _markAsRead(Book book) async {
-    // ... Bu metodun içeriği aynı kalıyor ...
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       builder: (context) => const RatingModal(),
@@ -191,9 +178,12 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
+  // --- GÜNCELLENEN KAYDIRMA ARKA PLANLARI ---
+  // Artık kart ile aynı şekle ve boşluğa sahipler.
+
   Widget _buildSwipeActionRight() {
-    // ... Bu metodun içeriği aynı kalıyor ...
     return Container(
+      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       decoration: BoxDecoration(
         color: AppColors.success,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
@@ -212,8 +202,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   }
 
   Widget _buildSwipeActionLeft() {
-    // ... Bu metodun içeriği aynı kalıyor ...
     return Container(
+      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       decoration: BoxDecoration(
         color: AppColors.error,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
