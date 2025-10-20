@@ -18,26 +18,32 @@ class _ExploreScreenState extends State<ExploreScreen> {
   final BookService _bookService = BookService();
   final DatabaseService _databaseService = DatabaseService();
   final _searchController = TextEditingController();
-  
-  // DÜZELTME: Artık 'late' değil ve tek bir Future'ımız var.
-  Future<List<Book>>? _trendingBooksFuture; 
+
+  Future<List<Book>>? _newAndNotableFuture;
+  Future<List<Book>>? _bestsellersFuture;
+  Future<List<Book>>? _sciFiFuture;
+
   List<Book>? _searchResults;
   bool _isLoading = false;
+  bool _isSearchOpen = false;
 
   @override
   void initState() {
     super.initState();
-    // Yükleme işlemini initState içinde başlatıyoruz.
-    _trendingBooksFuture = _loadInitialData();
+    _loadInitialData();
   }
 
-  // DÜZELTME: Tüm başlangıç verisini yükleyen tek bir metot.
-  Future<List<Book>> _loadInitialData() async {
-    // Önce okunan kitapların ID'lerini al
+  Future<void> _loadInitialData() async {
     final readBookIds = await _databaseService.getReadBookIds();
-    // Sonra trend olan kitapları al
-    final booksJson = await _bookService.fetchTrendingBooks();
-    // Okunmamış olanları filtreleyip geri döndür
+    setState(() {
+      _newAndNotableFuture = _fetchAndFilterBooks(_bookService.fetchNewAndNotable, readBookIds);
+      _bestsellersFuture = _fetchAndFilterBooks(_bookService.fetchNytBestsellers, readBookIds);
+      _sciFiFuture = _fetchAndFilterBooks(() => _bookService.fetchBooksByGenre('science fiction'), readBookIds);
+    });
+  }
+
+  Future<List<Book>> _fetchAndFilterBooks(Future<List<dynamic>> Function() fetcher, Set<String> readBookIds) async {
+    final booksJson = await fetcher();
     return booksJson
         .map((json) => Book.fromJson(json))
         .where((book) => !readBookIds.contains(book.id))
@@ -51,12 +57,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
       });
       return;
     }
-    setState(() { _isLoading = true; });
-    
-    // Aramadan önce de okunan kitapları kontrol edelim
+    setState(() {
+      _isLoading = true;
+    });
+
     final readBookIds = await _databaseService.getReadBookIds();
     final booksJson = await _bookService.searchBooks(query);
-    
+
     setState(() {
       _searchResults = booksJson
           .map((json) => Book.fromJson(json))
@@ -71,45 +78,76 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _searchController.dispose();
     super.dispose();
   }
-  
-  // KODUN GERİ KALANI AYNI
-  // ... build, _buildDefaultContent, _buildSearchResults, etc. ...
+
+  Widget _buildAppBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: _isSearchOpen
+            ? Row(
+                key: const ValueKey('searchBar'),
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Search...',
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: _performSearch,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        _isSearchOpen = false;
+                        _searchResults = null;
+                        _searchController.clear();
+                      });
+                    },
+                  ),
+                ],
+              )
+            : Row(
+                key: const ValueKey('titleBar'),
+                children: [
+                  const Text('Lector', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      setState(() {
+                        _isSearchOpen = true;
+                      });
+                    },
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isSearching = _searchResults != null;
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search for books or authors...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                ),
-                onSubmitted: _performSearch,
-              ),
-              const SizedBox(height: 24),
-              
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : isSearching
-                        ? _buildSearchResults()
-                        : _buildDefaultContent(),
-              ),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAppBar(),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : isSearching
+                      ? _buildSearchResults()
+                      : _buildDefaultContent(),
+            ),
+          ],
         ),
       ),
     );
@@ -117,13 +155,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildDefaultContent() {
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('Trending Now'),
-          const SizedBox(height: 12),
-          _buildHorizontalBookList(_trendingBooksFuture!),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle('New & Notable'),
+            const SizedBox(height: 12),
+            _buildHorizontalBookList(_newAndNotableFuture),
+            const SizedBox(height: 24),
+            _buildSectionTitle('NYT Bestsellers'),
+            const SizedBox(height: 12),
+            _buildHorizontalBookList(_bestsellersFuture),
+            const SizedBox(height: 24),
+            _buildSectionTitle('Science Fiction & Fantasy'),
+            const SizedBox(height: 12),
+            _buildHorizontalBookList(_sciFiFuture),
+          ],
+        ),
       ),
     );
   }
@@ -137,7 +186,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       itemBuilder: (context, index) {
         final book = _searchResults![index];
         return ListTile(
-          leading: Image.network(book.coverUrl, fit: BoxFit.cover, width: 50),
+          leading: Image.network(book.coverUrl, fit: BoxFit.cover, width: 50, height: 80),
           title: Text(book.title),
           subtitle: Text(book.author),
           onTap: () {
@@ -153,11 +202,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Text(
-      title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      title,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
 
-  Widget _buildHorizontalBookList(Future<List<Book>> future) {
+  Widget _buildHorizontalBookList(Future<List<Book>>? future) {
+    if (future == null) {
+      return const SizedBox(height: 240, child: Center(child: CircularProgressIndicator()));
+    }
     return FutureBuilder<List<Book>>(
       future: future,
       builder: (context, snapshot) {
@@ -169,7 +222,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         }
         if (snapshot.hasData) {
           final books = snapshot.data!;
-          if (books.isEmpty){
+          if (books.isEmpty) {
             return const SizedBox(height: 240, child: Center(child: Text('No new books to show.')));
           }
           return SizedBox(
