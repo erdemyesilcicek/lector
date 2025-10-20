@@ -279,8 +279,6 @@ class DatabaseService {
         });
   }
 
-  // lib/core/services/database_service.dart dosyasının içine
-
   // Get a set of all book IDs in the user's exhibition for quick lookups
   Future<Set<String>> getReadBookIds() async {
     if (_userId == null) return {};
@@ -294,8 +292,6 @@ class DatabaseService {
     // Return a Set for efficient .contains() checks
     return snapshot.docs.map((doc) => doc.id).toSet();
   }
-
-  // lib/core/services/database_service.dart dosyasının içine
 
   // Update the rating and notes of a book in the user's exhibition
   Future<void> updateExhibitionBook(
@@ -312,5 +308,20 @@ class DatabaseService {
         .doc(bookId);
 
     await docRef.update({'rating': newRating, 'notes': newNotes});
+  }
+
+  // Get the 3 most recently added books from the user's exhibition
+  Future<List<ExhibitionBook>> getRecentExhibitionBooks({int limit = 3}) async {
+    if (_userId == null) return [];
+
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('exhibition')
+        .orderBy('addedAt', descending: true) // En yeniye göre sırala
+        .limit(limit) // Belirtilen sayıda al
+        .get();
+
+    return snapshot.docs.map((doc) => ExhibitionBook.fromDoc(doc.data(), doc.id)).toList();
   }
 }
