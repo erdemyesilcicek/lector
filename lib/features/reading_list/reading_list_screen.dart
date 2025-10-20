@@ -8,6 +8,7 @@ import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
+import 'package:lector/widgets/generated_cover_widget.dart';
 import 'package:lector/widgets/rating_modal_widget.dart';
 
 class ReadingListScreen extends StatefulWidget {
@@ -41,13 +42,22 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.bookmark_border_rounded, size: 80, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.bookmark_border_rounded,
+                      size: 80,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(height: AppConstants.paddingMedium),
-                    Text('Your Reading List is Empty', style: AppTextStyles.headline3, textAlign: TextAlign.center),
+                    Text(
+                      'Your Reading List is Empty',
+                      style: AppTextStyles.headline3,
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: AppConstants.paddingSmall),
                     Text(
                       'Add books from the Explore tab to see them here.',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -57,10 +67,10 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
           }
 
           final readingList = snapshot.data!;
-          // ListView'in padding'ini buradan alıp kartlara verdik,
-          // böylece kaydırma arka planı tam genişlikte olabilir.
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium, vertical: AppConstants.paddingSmall),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.paddingMedium,
+                vertical: AppConstants.paddingSmall),
             itemCount: readingList.length,
             itemBuilder: (context, index) {
               final book = readingList[index];
@@ -72,7 +82,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                   if (direction == DismissDirection.endToStart) {
                     await _databaseService.deleteFromReadingList(book.id);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${book.title} removed from list.')),
+                      SnackBar(
+                          content: Text('${book.title} removed from list.')),
                     );
                   }
                 },
@@ -93,8 +104,11 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   }
 
   Widget _buildBookListItem(Book book) {
+    final bool hasRealCover = !book.coverUrl.contains('i.imgur.com/J5LVHEL.png');
+
     return Card(
-      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
+      margin: const EdgeInsets.only(
+          top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
@@ -104,7 +118,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => BookDetailScreen(book: book)),
+            MaterialPageRoute(
+                builder: (context) => BookDetailScreen(book: book)),
           );
         },
         child: Padding(
@@ -115,7 +130,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                 width: 70,
                 height: 100,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.borderRadiusMedium),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
@@ -126,8 +142,24 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                  child: Image.network(book.coverUrl, fit: BoxFit.cover),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  child: hasRealCover
+                      ? Image.network(
+                          book.coverUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2.0));
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return GeneratedCover(
+                                title: book.title, author: book.author);
+                          },
+                        )
+                      : GeneratedCover(title: book.title, author: book.author),
                 ),
               ),
               const SizedBox(width: AppConstants.paddingMedium),
@@ -137,7 +169,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
                   children: [
                     Text(
                       book.title,
-                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -178,12 +211,10 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
     }
   }
 
-  // --- GÜNCELLENEN KAYDIRMA ARKA PLANLARI ---
-  // Artık kart ile aynı şekle ve boşluğa sahipler.
-
   Widget _buildSwipeActionRight() {
     return Container(
-      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
+      margin: const EdgeInsets.only(
+          top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       decoration: BoxDecoration(
         color: AppColors.success,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
@@ -195,7 +226,9 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
         children: [
           Icon(Icons.check_circle, color: Colors.white),
           SizedBox(width: 10),
-          Text('Mark as Read', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text('Mark as Read',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -203,7 +236,8 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
 
   Widget _buildSwipeActionLeft() {
     return Container(
-      margin: const EdgeInsets.only(top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
+      margin: const EdgeInsets.only(
+          top: AppConstants.paddingSmall, bottom: AppConstants.paddingSmall),
       decoration: BoxDecoration(
         color: AppColors.error,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
@@ -213,7 +247,9 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text('Remove',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           SizedBox(width: 10),
           Icon(Icons.delete, color: Colors.white),
         ],
