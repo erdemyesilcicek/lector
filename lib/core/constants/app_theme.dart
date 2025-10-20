@@ -8,48 +8,56 @@ import 'package:lector/core/constants/text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  static final ThemeData lightTheme = ThemeData(
+  // Artık bir "darkTheme" oluşturuyoruz
+  static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    brightness: Brightness.light,
+    brightness: Brightness.dark, // Temanın koyu olduğunu belirtiyoruz
     
-    // Renk Şeması
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.background,
+
+    colorScheme: const ColorScheme.dark(
+      primary: AppColors.primary,
+      secondary: AppColors.accent,
       background: AppColors.background,
       surface: AppColors.surface,
       error: AppColors.error,
     ),
 
-    // Tipografi
     textTheme: TextTheme(
-      displayLarge: AppTextStyles.headline1,
-      displayMedium: AppTextStyles.headline2,
-      displaySmall: AppTextStyles.headline3,
-      bodyLarge: AppTextStyles.bodyLarge,
-      bodyMedium: AppTextStyles.bodyMedium,
-      bodySmall: AppTextStyles.bodySmall,
+      displayLarge: AppTextStyles.headline1.copyWith(color: AppColors.textPrimary),
+      displayMedium: AppTextStyles.headline2.copyWith(color: AppColors.textPrimary),
+      displaySmall: AppTextStyles.headline3.copyWith(color: AppColors.textPrimary),
+      bodyLarge: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
+      bodyMedium: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      bodySmall: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
     ),
 
-    // AppBar Teması
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.background,
       elevation: 0,
-      titleTextStyle: AppTextStyles.headline2.copyWith(color: AppColors.primary),
+      titleTextStyle: AppTextStyles.headline2.copyWith(color: AppColors.textPrimary),
       iconTheme: const IconThemeData(color: AppColors.primary),
     ),
+    
+    cardTheme: const CardThemeData(
+      color: AppColors.surface,
+      elevation: 2,
+    ),
 
-    // Buton Temaları
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        textStyle: AppTextStyles.button,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.surface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        borderSide: BorderSide.none,
       ),
     ),
     
-    // Diğer component'lerin temalarını da buraya ekleyebiliriz.
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.surface,
+      selectedItemColor: AppColors.accent,
+      unselectedItemColor: AppColors.textSecondary,
+      type: BottomNavigationBarType.fixed,
+    ),
   );
 }

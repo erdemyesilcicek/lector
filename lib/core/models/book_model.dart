@@ -20,16 +20,21 @@ class Book {
   factory Book.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
     final imageLinks = volumeInfo['imageLinks'] ?? {};
-    final description = volumeInfo['description'] ?? 'No summary available.'; // API'den özet çekiyoruz
-    
-    final categories = (volumeInfo['categories'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        ?.toList() ?? [];
+    final description =
+        volumeInfo['description'] ??
+        'No summary available.'; // API'den özet çekiyoruz
+
+    final categories =
+        (volumeInfo['categories'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            ?.toList() ??
+        [];
 
     return Book(
       id: json['id'] ?? 'Unknown ID',
       title: volumeInfo['title'] ?? 'No Title',
-      author: (volumeInfo['authors'] as List<dynamic>?)?.first ?? 'Unknown Author',
+      author:
+          (volumeInfo['authors'] as List<dynamic>?)?.first ?? 'Unknown Author',
       coverUrl: imageLinks['thumbnail'] ?? 'https://i.imgur.com/J5LVHEL.png',
       summary: description, // YENİ
       genres: categories,

@@ -1,7 +1,9 @@
 // lib/widgets/book_card_widget.dart
 
 import 'package:flutter/material.dart';
-import 'package:lector/widgets/generated_cover_widget.dart'; // Yeni widget'ımızı import ediyoruz
+import 'package:lector/core/constants/app_constants.dart';
+import 'package:lector/core/constants/text_styles.dart';
+import 'package:lector/widgets/generated_cover_widget.dart';
 
 class BookCard extends StatelessWidget {
   final String title;
@@ -19,74 +21,58 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Kapak URL'sinin placeholder (yer tutucu) olup olmadığını kontrol et
     final bool hasRealCover = !coverUrl.contains('i.imgur.com/J5LVHEL.png');
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 140,
-        margin: const EdgeInsets.only(right: 12.0),
+        margin: const EdgeInsets.only(right: AppConstants.paddingMedium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Kitap Kapağı Alanı
+            // --- KAPAK GÖRSELİ ALANI ---
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
+              child: Card(
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.4),
+                clipBehavior: Clip.antiAlias, // İçeriğin karttan taşmasını engeller
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
                 ),
-                // ClipRRect, içindeki widget'ı dış container'ın yuvarlak köşelerine uymaya zorlar
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  // AKILLI KONTROL BURADA
-                  child: hasRealCover
-                      ? Image.network(
-                          coverUrl,
-                          fit: BoxFit.cover,
-                          // Resim yüklenirken veya hata oluşursa ne olacağı
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(child: CircularProgressIndicator());
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            // Eğer resim URL'si bozuksa yine de GeneratedCover'ı göster
-                            return GeneratedCover(title: title, author: author);
-                          },
-                        )
-                      : GeneratedCover(title: title, author: author),
-                ),
+                child: hasRealCover
+                    ? Image.network(
+                        coverUrl,
+                        fit: BoxFit.cover, // Her zaman alanı kapla
+                        // Alanın tamamını doldurmasını garanti et
+                        width: double.infinity,
+                        height: double.infinity,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(child: CircularProgressIndicator(strokeWidth: 2.0));
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return GeneratedCover(title: title, author: author);
+                        },
+                      )
+                    : GeneratedCover(title: title, author: author),
               ),
             ),
-            const SizedBox(height: 8),
-            // Kitap Başlığı
+            const SizedBox(height: AppConstants.paddingSmall),
+            
+            // --- KİTAP BİLGİLERİ ---
             Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            // Yazar
             Text(
               author,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 12,
-              ),
+              style: AppTextStyles.bodySmall,
             ),
           ],
         ),

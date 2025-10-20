@@ -299,7 +299,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   label: Text(
                                     'Book of the Day',
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
