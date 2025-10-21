@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // YENİ KOYU TEMA PALETİ
-  static const Color primary = Color(0xFFE0E0E0); // Ana Metin Rengi (Hafif Kırık Beyaz)
-  static const Color accent = Color(0xFFD4AF37); // Vurgu Rengi (Antik Altın - Bu harika, kalıyor)
+  // YENİ AYDINLIK TEMA (Medium Tarzı)
+  static const Color primary = Color(0xFF1A1A1A); // Ana Renk (Metinler, Vurgulu İkonlar - Neredeyse Siyah)
+  static const Color accent = Color(0xFF000000); // Vurgu Rengi (Butonlar için saf siyah deneyelim)
+  // Alternatif Vurgu: Eğer siyah buton çok sert durursa diye eski altın rengini yorumda tutalım.
+  // static const Color accent = Color(0xFFD4AF37); 
 
-  static const Color background = Color(0xFF121212); // Arka Plan (Saf Siyah Değil, Kömür Grisi)
-  static const Color surface = Color(0xFF1E1E1E);   // Kart Arka Planı (Biraz daha açık gri)
+  static const Color background = Color(0xFFFFFFFF); // Arka Plan (Saf Beyaz)
+  static const Color surface = Color(0xFFFFFFFF);   // Kart Arka Planı (Saf Beyaz)
   
-  static const Color textPrimary = Color(0xFFE0E0E0); // Ana Metinler (Kırık Beyaz)
-  static const Color textSecondary = Color(0xFFBDBDBD); // İkincil Metinler (Soluk Gri)
+  static const Color textPrimary = Color(0xFF1A1A1A); // Ana Metinler (Neredeyse Siyah)
+  static const Color textSecondary = Color(0xFF666666); // İkincil Metinler (Orta Gri)
 
-  static const Color success = Color(0xFF388E3C); // Daha koyu, tok bir yeşil
-  static const Color error = Color(0xFFC62828);   // Daha koyu, tok bir kırmızı
+  static const Color border = Color(0xFFE0E0E0);   // Ayırıcılar, Kenarlıklar (Çok Açık Gri)
+
+  static const Color success = Color(0xFF388E3C); // Yeşil (Aynı kalabilir)
+  static const Color error = Color(0xFFC62828);   // Kırmızı (Aynı kalabilir)
 }

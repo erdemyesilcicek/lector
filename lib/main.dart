@@ -25,7 +25,7 @@ class LectorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Lector',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       home: const AuthGate(),
     );
   }
