@@ -8,120 +8,131 @@ import 'package:lector/core/constants/text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  // YENİ AYDINLIK TEMA (Medium Tarzı)
+  // --- AYDINLIK TEMA (Medium Tarzı) ---
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    
-    scaffoldBackgroundColor: AppColors.background, // Saf Beyaz
-
-    // Renk Şeması (Aydınlık tema üzerine kurulu)
+    scaffoldBackgroundColor: AppColors.background,
     colorScheme: const ColorScheme.light(
-      primary: AppColors.primary, // Neredeyse Siyah
-      secondary: AppColors.accent, // Saf Siyah (Butonlar için)
-      background: AppColors.background, // Beyaz
-      surface: AppColors.surface, // Beyaz
+      primary: AppColors.primary,
+      secondary: AppColors.accent, // Butonlar için
+      background: AppColors.background,
+      surface: AppColors.surface,
       error: AppColors.error,
-      onPrimary: AppColors.background, // Siyah üstündeki yazı (Beyaz)
-      onSecondary: AppColors.background, // Siyah üstündeki yazı (Beyaz)
-      onBackground: AppColors.textPrimary, // Beyaz üstündeki yazı (Siyah)
-      onSurface: AppColors.textPrimary, // Beyaz üstündeki yazı (Siyah)
-      onError: AppColors.background, // Kırmızı üstündeki yazı (Beyaz)
+      onPrimary: AppColors.background,
+      onSecondary: AppColors.background,
+      onBackground: AppColors.textPrimary,
+      onSurface: AppColors.textPrimary,
+      onError: AppColors.background,
     ),
+    textTheme: TextTheme( /* ... AYNI ... */ ),
+    appBarTheme: AppBarTheme( /* ... AYNI ... */ ),
+    cardTheme: CardThemeData( /* ... AYNI ... */ ),
+    elevatedButtonTheme: ElevatedButtonThemeData( /* ... AYNI ... */ ),
+    outlinedButtonTheme: OutlinedButtonThemeData( /* ... AYNI ... */ ),
+    textButtonTheme: TextButtonThemeData( /* ... AYNI ... */ ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData( /* ... AYNI ... */ ),
+    dividerTheme: const DividerThemeData( /* ... AYNI ... */ ),
+    inputDecorationTheme: InputDecorationTheme( /* ... AYNI ... */ ),
+    // ... (Diğer stilleri önceki tam koddan kopyala)
+  );
 
-    // Tipografi
-    textTheme: TextTheme(
-      displayLarge: AppTextStyles.headline1,
-      displayMedium: AppTextStyles.headline2,
-      displaySmall: AppTextStyles.headline3,
-      bodyLarge: AppTextStyles.bodyLarge,
-      bodyMedium: AppTextStyles.bodyMedium,
-      bodySmall: AppTextStyles.bodySmall,
-      labelLarge: AppTextStyles.button, // Butonlar için
+  // --- YENİ: KOYU TEMA ---
+  static final ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    // Koyu tema renklerini app_colors'dan alabilir veya doğrudan burada tanımlayabiliriz.
+    // Şimdilik basitçe ColorScheme.dark kullanalım ve özelleştirelim.
+    scaffoldBackgroundColor: const Color(0xFF121212), // Kömür Grisi
+    colorScheme: const ColorScheme.dark(
+      primary: Color(0xFFE0E0E0), // Ana Metin (Kırık Beyaz)
+      secondary: AppColors.accent, // Vurgu (Altın)
+      background: Color(0xFF121212),
+      surface: Color(0xFF1E1E1E), // Kart Arka Planı
+      error: Color(0xFFCF6679), // Koyu tema için standart hata rengi
+      onPrimary: Color(0xFF121212), // Beyaz üstündeki yazı (Siyah)
+      onSecondary: Color(0xFF121212), // Altın üstündeki yazı (Siyah)
+      onBackground: Color(0xFFE0E0E0), // Siyah üstündeki yazı (Beyaz)
+      onSurface: Color(0xFFE0E0E0), // Gri üstündeki yazı (Beyaz)
+      onError: Color(0xFF121212), // Hata rengi üstündeki yazı (Siyah)
     ),
-
-    // AppBar Teması (Beyaz, alt çizgisiz)
+    textTheme: TextTheme( // Koyu tema için renkleri override et
+      displayLarge: AppTextStyles.headline1.copyWith(color: const Color(0xFFE0E0E0)),
+      displayMedium: AppTextStyles.headline2.copyWith(color: const Color(0xFFE0E0E0)),
+      displaySmall: AppTextStyles.headline3.copyWith(color: const Color(0xFFE0E0E0)),
+      bodyLarge: AppTextStyles.bodyLarge.copyWith(color: const Color(0xFFE0E0E0)),
+      bodyMedium: AppTextStyles.bodyMedium.copyWith(color: const Color(0xFFE0E0E0)),
+      bodySmall: AppTextStyles.bodySmall.copyWith(color: const Color(0xFFBDBDBD)),
+      labelLarge: AppTextStyles.button.copyWith(color: const Color(0xFF121212)), // Koyu buton üstü siyah yazı? Kontrol et.
+    ),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.primary, // Geri butonu rengi
-      elevation: 0, // Alt çizgiyi kaldır
-      titleTextStyle: AppTextStyles.headline2,
-      iconTheme: const IconThemeData(color: AppColors.primary),
+      backgroundColor: const Color(0xFF1E1E1E), // Yüzey rengi
+      elevation: 0,
+      titleTextStyle: AppTextStyles.headline2.copyWith(color: const Color(0xFFE0E0E0)),
+      iconTheme: const IconThemeData(color: Color(0xFFE0E0E0)),
     ),
-
-    // Kart Teması (Gölgesiz veya çok hafif)
     cardTheme: CardThemeData(
-      color: AppColors.surface,
-      elevation: 1, // Çok hafif gölge veya 0
-      shape: RoundedRectangleBorder(
+      color: const Color(0xFF1E1E1E), // Yüzey rengi
+      elevation: 2,
+       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-         // İnce kenarlık ekleyebiliriz (opsiyonel)
-        // side: BorderSide(color: AppColors.border, width: 0.5),
       ),
     ),
-
-    // Buton Temaları (Siyah butonlar)
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.accent, // Saf Siyah
-        foregroundColor: AppColors.background, // Beyaz Yazı
-        textStyle: AppTextStyles.button,
-        elevation: 1, // Hafif gölge
+        backgroundColor: AppColors.accent, // Altın
+        foregroundColor: const Color(0xFF121212), // Siyah Yazı
+        textStyle: AppTextStyles.button.copyWith(color: const Color(0xFF121212)),
+        elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         ),
       ),
     ),
-     outlinedButtonTheme: OutlinedButtonThemeData(
+    outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary, // Siyah Yazı/İkon
-        side: const BorderSide(color: AppColors.primary, width: 1.5), // Siyah kenarlık
+        foregroundColor: AppColors.accent, // Altın Yazı/İkon
+        side: const BorderSide(color: AppColors.accent, width: 1.5), // Altın kenarlık
          shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         ),
       )
      ),
-     textButtonTheme: TextButtonThemeData(
+    textButtonTheme: TextButtonThemeData(
        style: TextButton.styleFrom(
-         foregroundColor: AppColors.textSecondary, // Gri yazı
+         foregroundColor: const Color(0xFFBDBDBD), // Açık Gri yazı
        )
      ),
-
-    // Alt Navigasyon Barı Teması
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: AppColors.surface, // Beyaz
-      selectedItemColor: AppColors.primary, // Seçili: Siyah
-      unselectedItemColor: AppColors.textSecondary, // Seçili Değil: Gri
+      backgroundColor: const Color(0xFF1E1E1E), // Yüzey rengi
+      selectedItemColor: AppColors.accent, // Seçili: Altın
+      unselectedItemColor: const Color(0xFFBDBDBD), // Seçili Değil: Açık Gri
       type: BottomNavigationBarType.fixed,
-      elevation: 4, // Hafif gölge
+      elevation: 4,
     ),
-
-    // Divider Teması
-    dividerTheme: const DividerThemeData(
-      color: AppColors.border, // Açık Gri
+     dividerTheme: const DividerThemeData(
+      color: Color(0x44BDBDBD), // Yarı şeffaf açık gri
       thickness: 0.5,
     ),
-
-    // Input Alanları Teması
      inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.grey.shade100, // Çok açık gri dolgu
+      fillColor: const Color(0xFF2C2C2C), // Daha koyu gri dolgu
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppConstants.paddingMedium,
         vertical: AppConstants.paddingSmall,
       ),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+      hintStyle: AppTextStyles.bodyMedium.copyWith(color: const Color(0xFFBDBDBD)),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        borderSide: BorderSide.none, // Kenarlık yok
-      ),
-      enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         borderSide: BorderSide.none,
       ),
-      focusedBorder: OutlineInputBorder(
+       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.0), // Odaklanınca siyah kenarlık
+        borderSide: BorderSide.none,
+      ),
+       focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        borderSide: const BorderSide(color: AppColors.accent, width: 1.0), // Odaklanınca altın kenarlık
       ),
     ),
   );

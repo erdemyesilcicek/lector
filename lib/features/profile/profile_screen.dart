@@ -178,7 +178,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: const Text('Get Smart Recommendations'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
-                    textStyle: AppTextStyles.button.copyWith(fontSize: 16),
+                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 16),
+                    // YENİ SATIR: Daha az yuvarlak köşeler için
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium), // Veya daha köşeli için borderRadiusSmall
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
