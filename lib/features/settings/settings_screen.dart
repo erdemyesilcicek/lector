@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_constants.dart';
-import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/providers/theme_provider.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';

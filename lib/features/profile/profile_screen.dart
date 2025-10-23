@@ -11,6 +11,7 @@ import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart'; // Detay ekranı için
 import 'package:lector/features/profile/recommendations_screen.dart';
+import 'package:lector/widgets/banner_card.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/generated_cover_widget.dart';
 
@@ -24,7 +25,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   final DatabaseService _databaseService = DatabaseService();
-  final User? _currentUser = FirebaseAuth.instance.currentUser; // Mevcut kullanıcıyı al
+  final User? _currentUser =
+      FirebaseAuth.instance.currentUser; // Mevcut kullanıcıyı al
 
   late Future<Map<String, dynamic>> _profileDataFuture;
 
@@ -37,10 +39,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Hem istatistikleri hem de son eklenenleri tek seferde yükleyen metot
   Future<Map<String, dynamic>> _loadProfileData() async {
     final books = await _databaseService.getExhibitionBooks();
-    final recentBooks = await _databaseService.getRecentExhibitionBooks(limit: 3);
+    final recentBooks = await _databaseService.getRecentExhibitionBooks(
+      limit: 3,
+    );
 
     Map<String, dynamic> stats = {
-      'totalBooks': 0, 'favoriteGenre': 'N/A', 'favoriteAuthor': 'N/A'
+      'totalBooks': 0,
+      'favoriteGenre': 'N/A',
+      'favoriteAuthor': 'N/A',
     };
 
     if (books.isNotEmpty) {
@@ -55,7 +61,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       String favoriteGenre = 'N/A';
       if (genreCounts.isNotEmpty) {
-        favoriteGenre = genreCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+        favoriteGenre = genreCounts.entries
+            .reduce((a, b) => a.value > b.value ? a : b)
+            .key;
       }
 
       // Favori Yazar Hesaplaması
@@ -65,9 +73,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       String favoriteAuthor = 'N/A';
       if (authorCounts.isNotEmpty) {
-        favoriteAuthor = authorCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+        favoriteAuthor = authorCounts.entries
+            .reduce((a, b) => a.value > b.value ? a : b)
+            .key;
       }
-      
+
       stats = {
         'totalBooks': books.length,
         'favoriteGenre': favoriteGenre,
@@ -75,10 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       };
     }
 
-    return {
-      'stats': stats,
-      'recentBooks': recentBooks,
-    };
+    return {'stats': stats, 'recentBooks': recentBooks};
   }
 
   // E-postayı maskelemek için yardımcı fonksiyon
@@ -103,24 +110,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            print("Profile Load Error: ${snapshot.error}"); // Hata ayıklama için
+            print(
+              "Profile Load Error: ${snapshot.error}",
+            ); // Hata ayıklama için
             return const Center(child: Text('Could not load profile data.'));
           }
           if (!snapshot.hasData) {
-             return const Center(child: Text('No profile data available.'));
+            return const Center(child: Text('No profile data available.'));
           }
 
           final profileData = snapshot.data!;
           final stats = profileData['stats'] as Map<String, dynamic>;
-          final recentBooks = profileData['recentBooks'] as List<ExhibitionBook>;
+          final recentBooks =
+              profileData['recentBooks'] as List<ExhibitionBook>;
 
-          return RefreshIndicator( // Sayfayı yenileme özelliği
+          return RefreshIndicator(
+            // Sayfayı yenileme özelliği
             onRefresh: () async {
               setState(() {
-                 _profileDataFuture = _loadProfileData();
+                _profileDataFuture = _loadProfileData();
               });
             },
-            child: ListView( // Column yerine ListView, uzun içerik için
+            child: ListView(
+              // Column yerine ListView, uzun içerik için
               padding: const EdgeInsets.all(AppConstants.paddingMedium),
               children: [
                 // --- KULLANICI BİLGİSİ ---
@@ -129,17 +141,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const CircleAvatar(
                       radius: 30,
                       backgroundColor: AppColors.surface,
-                      child: Icon(Icons.person, size: 30, color: AppColors.textSecondary),
+                      child: Icon(
+                        Icons.person,
+                        size: 30,
+                        color: AppColors.textSecondary,
+                      ),
                       // TODO: Gelecekte profil resmi eklenebilir
                     ),
                     const SizedBox(width: AppConstants.paddingMedium),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Welcome back!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                        Text(
+                          'Welcome back!',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                         Text(
                           _maskEmail(_currentUser?.email),
-                          style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -157,9 +180,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text('Reading Stats', style: AppTextStyles.headline3),
                         const SizedBox(height: AppConstants.paddingSmall),
                         const Divider(color: AppColors.textSecondary),
-                        _buildStatRow(Icons.book_outlined, 'Total Books Read', '${stats['totalBooks']}'),
-                        _buildStatRow(Icons.favorite_border, 'Favorite Genre', stats['favoriteGenre']),
-                        _buildStatRow(Icons.edit_outlined, 'Favorite Author', stats['favoriteAuthor']),
+                        _buildStatRow(
+                          Icons.book_outlined,
+                          'Total Books Read',
+                          '${stats['totalBooks']}',
+                        ),
+                        _buildStatRow(
+                          Icons.favorite_border,
+                          'Favorite Genre',
+                          stats['favoriteGenre'],
+                        ),
+                        _buildStatRow(
+                          Icons.edit_outlined,
+                          'Favorite Author',
+                          stats['favoriteAuthor'],
+                        ),
                       ],
                     ),
                   ),
@@ -167,23 +202,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: AppConstants.paddingLarge),
 
                 // --- AKILLI ÖNERİLER BUTONU ---
-                ElevatedButton.icon(
-                  onPressed: () {
+                BannerCard(
+                  title: "Recommendation",
+                  description: "Discover books you’ll love.",
+                  assetImagePath: "assets/icon/images/light.png",
+                  onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RecommendationsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const RecommendationsScreen(),
+                      ),
                     );
                   },
-                  icon: const Icon(Icons.lightbulb_outline),
-                  label: const Text('Get Smart Recommendations'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
-                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 16),
-                    // YENİ SATIR: Daha az yuvarlak köşeler için
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium), // Veya daha köşeli için borderRadiusSmall
-                    ),
-                  ),
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
 
@@ -200,8 +230,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final book = recentBooks[index];
                         // BookCard'ı burada da kullanabiliriz
                         return SizedBox(
-                           width: 120, // Daha küçük genişlik
-                           child: _buildRecentBookCard(book),
+                          width: 120, // Daha küçük genişlik
+                          child: _buildRecentBookCard(book),
                         );
                       },
                     ),
@@ -210,14 +240,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
 
                 // --- ÇIKIŞ YAP BUTONU ---
-                Center( // Ortalamak için
+                Center(
+                  // Ortalamak için
                   child: TextButton.icon(
                     onPressed: () {
                       _authService.signOut();
                     },
                     icon: const Icon(Icons.logout),
                     label: const Text('Sign Out'),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                    ),
                   ),
                 ),
               ],
@@ -238,7 +271,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(width: AppConstants.paddingMedium),
           Text(title, style: AppTextStyles.bodyMedium),
           const Spacer(),
-          Text(value, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -246,21 +284,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Son eklenen kitaplar için özel, daha küçük kart
   Widget _buildRecentBookCard(ExhibitionBook exBook) {
-     final bookForDetail = Book(
-      id: exBook.id, title: exBook.title, author: exBook.author,
-      coverUrl: exBook.coverUrl, summary: exBook.summary, genres: exBook.genres,
+    final bookForDetail = Book(
+      id: exBook.id,
+      title: exBook.title,
+      author: exBook.author,
+      coverUrl: exBook.coverUrl,
+      summary: exBook.summary,
+      genres: exBook.genres,
     );
-    final bool hasRealCover = !exBook.coverUrl.contains('i.imgur.com/J5LVHEL.png');
+    final bool hasRealCover = !exBook.coverUrl.contains(
+      'i.imgur.com/J5LVHEL.png',
+    );
 
-     return Padding(
-       padding: const EdgeInsets.only(right: AppConstants.paddingSmall),
-       child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.only(right: AppConstants.paddingSmall),
+      child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BookDetailScreen(book: bookForDetail)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookDetailScreen(book: bookForDetail),
+            ),
+          );
         },
-         child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-            child: hasRealCover
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+          child: hasRealCover
               ? Image.network(
                   exBook.coverUrl,
                   fit: BoxFit.cover,
@@ -268,15 +317,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   height: double.infinity,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
-                    return Container(color: AppColors.surface, child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.0))));
+                    return Container(
+                      color: AppColors.surface,
+                      child: const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                        ),
+                      ),
+                    );
                   },
-                   errorBuilder: (context, error, stackTrace) {
-                    return GeneratedCover(title: exBook.title, author: exBook.author);
+                  errorBuilder: (context, error, stackTrace) {
+                    return GeneratedCover(
+                      title: exBook.title,
+                      author: exBook.author,
+                    );
                   },
                 )
               : GeneratedCover(title: exBook.title, author: exBook.author),
-         ),
-       ),
-     );
+        ),
+      ),
+    );
   }
 }
