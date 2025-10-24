@@ -179,7 +179,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 bottom: AppConstants.paddingSmall, // Liste öncesi boşluk
               ),
               child: Text(
-                'Featured Fantasy',
+                'Classics',
                 style: theme.textTheme.headlineSmall,
               ), // Bölüm Başlığı
             ),
