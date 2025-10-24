@@ -206,6 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: "Recommendation",
                   description: "Discover books you’ll love.",
                   assetImagePath: "assets/icon/images/light.png",
+                  height: 100,
                   onTap: () {
                     Navigator.push(
                       context,

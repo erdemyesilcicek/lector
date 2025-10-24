@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class BookService {
   final String _baseUrl = 'https://www.googleapis.com/books/v1/volumes';
+  
+  get _googleBaseUrl => null;
 
   // "Trending" yerine artık "En Yeni ve Dikkate Değer" kitapları çekiyoruz
   Future<List<dynamic>> fetchNewAndNotable() async {
@@ -26,6 +28,24 @@ class BookService {
       }
     } catch (e) {
       print('Error fetching new books: $e');
+      return [];
+    }
+  }
+
+  // lib/core/services/book_service.dart dosyasının içine
+
+  // Fetch classic books (Using Google Books API subject query)
+  Future<List<dynamic>> fetchClassicBooks() async {
+    try {
+      final response = await http.get(Uri.parse('$_googleBaseUrl?q=subject:Classics&maxResults=10'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['items'] ?? [];
+      } else {
+        throw Exception('Failed to load classics');
+      }
+    } catch (e) {
+      print('Error fetching classics: $e');
       return [];
     }
   }

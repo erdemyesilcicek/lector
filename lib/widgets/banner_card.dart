@@ -87,7 +87,7 @@ class BannerCard extends StatelessWidget {
            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
          ),
         child: SizedBox(
-          height: height,
+          height: height ?? 120.0, // Varsayılan yüksekliği 120.0 olarak ayarladım
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch, // Dikeyde tüm alanı kapla
