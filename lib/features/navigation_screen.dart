@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart'; // Import AppColors
 import 'package:lector/core/constants/app_constants.dart'; // Import AppConstants
 import 'package:lector/features/explore/explore_screen.dart';
+import 'package:lector/features/home/home_screen.dart';
 import 'package:lector/features/profile/profile_screen.dart';
 import 'package:lector/features/reading_list/reading_list_screen.dart';
 import 'package:lector/features/exhibition/exhibition_screen.dart';
@@ -19,8 +20,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _screens = <Widget>[
-    ExploreScreen(),
+    HomeScreen(),
     ExhibitionScreen(),
+    ExploreScreen(),
     ReadingListScreen(),
     ProfileScreen(),
   ];
@@ -60,10 +62,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(icon: Icons.explore_outlined, selectedIcon: Icons.explore, index: 0, label: 'Explore'),
+          _buildNavItem(icon: Icons.home, selectedIcon: Icons.home, index: 0, label: 'Home'),
           _buildNavItem(icon: Icons.book_outlined, selectedIcon: Icons.book, index: 1, label: 'Exhibition'),
-          _buildNavItem(icon: Icons.bookmark_outline, selectedIcon: Icons.bookmark, index: 2, label: 'Reading List'),
-          _buildNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, index: 3, label: 'Profile'),
+          _buildNavItem(icon: Icons.explore_outlined, selectedIcon: Icons.explore, index: 2, label: 'Explore'),
+          _buildNavItem(icon: Icons.bookmark_outline, selectedIcon: Icons.bookmark, index: 3, label: 'Reading List'),
+          _buildNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, index: 4, label: 'Profile'),
         ],
       ),
     );

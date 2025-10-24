@@ -6,10 +6,10 @@ import 'package:lector/core/constants/app_constants.dart';
 class BannerCard extends StatelessWidget {
   final String title;
   final String description;
-  final String? assetImagePath; // Local asset path (PRIORITY)
-  final String? imageUrl; // Network URL (Used if asset is null)
+  final String? assetImagePath; // Yerel görsel yolu (ÖNCELİKLİ)
+  final String? imageUrl; // Network görsel URL'si (Asset yoksa kullanılır)
   final VoidCallback? onTap;
-  final double? height;
+  final double? height; // Kartın yüksekliği (Opsiyonel, verilmezse içeriğe göre ayarlanır)
   final Color? backgroundColor;
 
   const BannerCard({
@@ -29,61 +29,52 @@ class BannerCard extends StatelessWidget {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    // --- Determine the Image Widget ---
+    // --- Görsel Widget'ını Belirleme ---
     Widget imageWidget;
+    bool imageAvailable = false; // Görselin geçerli olup olmadığını takip etmek için
 
-    // 1. Prioritize Asset Image
+    // 1. Önce Asset Görselini Dene
     if (assetImagePath != null && assetImagePath!.isNotEmpty) {
-      // Use Image.asset for local files
+      imageAvailable = true;
       imageWidget = Image.asset(
         assetImagePath!,
-        key: ValueKey('asset_$assetImagePath'), // Add key
-        fit: BoxFit.cover,
+        key: ValueKey('asset_$assetImagePath'),
+        // ORTALAMA İÇİN BoxFit.contain KULLANIYORUZ
+        fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           print("!!! BannerCard Asset Error for '$assetImagePath': $error");
-          return Container( // Placeholder on error
-            color: theme.colorScheme.surfaceVariant,
-            alignment: Alignment.center,
-            child: Icon(Icons.broken_image_outlined, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
-          );
+          imageAvailable = false; // Hata durumunda görsel yok say
+          return _buildPlaceholderImage(theme); // Yer tutucu göster
         },
       );
     }
-    // 2. Fallback to Network Image
+    // 2. Asset Yoksa Network Görselini Dene
     else if (imageUrl != null && imageUrl!.isNotEmpty && imageUrl!.startsWith('http')) {
-       // Use Image.network ONLY for valid URLs
-       imageWidget = Image.network(
+      imageAvailable = true;
+      imageWidget = Image.network(
         imageUrl!,
-        key: ValueKey('network_$imageUrl'), // Add key
-        fit: BoxFit.cover,
+        key: ValueKey('network_$imageUrl'),
+        // ORTALAMA İÇİN BoxFit.contain KULLANIYORUZ
+        fit: BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
-          return Container( // Loading placeholder
-            color: theme.colorScheme.surfaceVariant,
-            alignment: Alignment.center,
-            child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.0)),
-          );
+          // Yüklenirken de yer tutucu gösterelim
+          return _buildPlaceholderImage(theme, isLoading: true);
         },
         errorBuilder: (context, error, stackTrace) {
           print("!!! BannerCard Network Error for '$imageUrl': $error");
-          return Container( // Placeholder on error
-            color: theme.colorScheme.surfaceVariant,
-            alignment: Alignment.center,
-            child: Icon(Icons.broken_image_outlined, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
-          );
+          imageAvailable = false; // Hata durumunda görsel yok say
+          return _buildPlaceholderImage(theme); // Yer tutucu göster
         },
       );
     }
-    // 3. If neither is valid, show placeholder
+    // 3. İkisi de Geçerli Değilse Yer Tutucu Göster
     else {
-      imageWidget = Container(
-        color: theme.colorScheme.surfaceVariant,
-        alignment: Alignment.center,
-        child: Icon(Icons.image_not_supported_outlined, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
-      );
+      imageAvailable = false;
+      imageWidget = _buildPlaceholderImage(theme);
     }
 
-    // --- Card Structure ---
+    // --- Kartın Ana Yapısı ---
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -99,20 +90,20 @@ class BannerCard extends StatelessWidget {
           height: height,
           child: IntrinsicHeight(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.stretch, // Dikeyde tüm alanı kapla
               children: [
-                // Text Area
+                // --- SOL TARAF: METİN (%60) ---
                 Expanded(
-                  flex: 3,
+                  flex: 3, // Toplam 5 flex'in 3'ü (%60)
                   child: Padding(
                     padding: const EdgeInsets.all(AppConstants.paddingMedium),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center, // Metin bloğunu dikeyde ortala
                       children: [
                         Text(
                           title,
-                          style: textTheme.titleLarge,
+                          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -129,16 +120,41 @@ class BannerCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Image Area
+
+                // --- SAĞ TARAF: GÖRSEL (%40) ---
                 Expanded(
-                  flex: 2,
-                  child: imageWidget, // Use the determined image widget
+                  flex: 2, // Toplam 5 flex'in 2'si (%40)
+                  // Görseli kendi alanının ortasına yerleştirmek için Container + Center
+                  child: Container(
+                    // Görsel yoksa veya hata varsa arka plan rengi belli olsun
+                    color: imageAvailable ? Colors.transparent : theme.colorScheme.surfaceVariant,
+                    // Görseli ortalamak için Padding ekleyebiliriz (opsiyonel)
+                    padding: const EdgeInsets.all(AppConstants.paddingSmall / 2),
+                    child: Center(
+                      // Görselin köşelerini kartın köşelerine uyduralım
+                      child: ClipRRect(
+                         borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall), // Hafif yuvarlak köşe
+                         child: imageWidget, // Yukarıda belirlediğimiz imageWidget
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // Yer tutucu görsel veya yükleme animasyonu için yardımcı metot
+  Widget _buildPlaceholderImage(ThemeData theme, {bool isLoading = false}) {
+    return Container(
+      color: theme.colorScheme.surfaceVariant,
+      alignment: Alignment.center,
+      child: isLoading
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.0))
+          : Icon(Icons.image_not_supported_outlined, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
     );
   }
 }
