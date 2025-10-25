@@ -221,15 +221,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHorizontalBookList(_bestsellersFuture),
 
                 const SizedBox(height: AppConstants.paddingLarge),
-                _buildSectionTitle('Critically Acclaimed'),
+                _buildSectionTitle('Award Winners'),
                 const SizedBox(height: AppConstants.paddingMedium),
-                _buildHorizontalBookList(_awardWinnersFuture),
-
-                const SizedBox(height: AppConstants.paddingLarge),
-                _buildSectionTitle('Science Fiction & Fantasy'),
-                const SizedBox(height: AppConstants.paddingMedium),
-                _buildHorizontalBookList(_sciFiFuture),
-
+                _buildHorizontalBookList(_awardWinnersFuture, showAwards: true),
                 const SizedBox(height: AppConstants.paddingLarge),
               ],
             ),
@@ -479,6 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHorizontalBookList(
     Future<List<Book>>? future, {
     String sectionTitle = '',
+    bool showAwards = false,
   }) {
     if (future == null) {
       print(
@@ -489,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-
     return FutureBuilder<List<Book>>(
       future: future,
       builder: (context, snapshot) {
@@ -568,6 +562,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: book.title,
                       author: book.author,
                       coverUrl: book.coverUrl,
+                      showAwardBadge: showAwards,
                       onTap: () {
                         Navigator.push(
                           context,

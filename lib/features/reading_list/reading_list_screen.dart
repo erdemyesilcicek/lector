@@ -24,7 +24,7 @@ class _ReadingListScreenState extends State<ReadingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'My Reading List'),
+      appBar: const CustomAppBar(title: 'Reading List'),
       backgroundColor: AppColors.background,
       body: StreamBuilder<List<Book>>(
         stream: _databaseService.getReadingListStream(),

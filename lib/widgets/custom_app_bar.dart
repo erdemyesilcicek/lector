@@ -21,7 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       title: Align(
         alignment: Alignment.centerLeft,
-        child: Text(title, style: textTheme.displaySmall),
+        child: Text(title, style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w500)),
       ),
       actions: actions,
     );

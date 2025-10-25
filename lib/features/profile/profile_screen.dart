@@ -118,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'My Profile'),
+      appBar: const CustomAppBar(title: 'Profile'),
       backgroundColor: AppColors.background,
       body: FutureBuilder<Map<String, dynamic>>(
         future: _profileDataFuture,

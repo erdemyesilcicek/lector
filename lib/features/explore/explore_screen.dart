@@ -84,63 +84,63 @@ class _ExploreScreenState extends State<ExploreScreen> {
               childAspectRatio: 0.9,
               children: <Widget>[
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/sci-fi.png',
+                  iconAssetPath: 'assets/images/sci-fi.png',
                   text: 'Sci-Fi',
                   onTap: () {
                     print('Sci-Fi tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/thriller.png',
+                  iconAssetPath: 'assets/images/thriller.png',
                   text: 'Thriller',
                   onTap: () {
                     print('Thriller tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/romance.png',
+                  iconAssetPath: 'assets/images/romance.png',
                   text: 'Romance',
                   onTap: () {
                     print('Romance tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/fantasy.png',
+                  iconAssetPath: 'assets/images/fantasy.png',
                   text: 'Fantasy',
                   onTap: () {
                     print('Fantasy tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/religion.png',
+                  iconAssetPath: 'assets/images/religion.png',
                   text: 'Religion',
                   onTap: () {
                     print('Religion tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/history.png',
+                  iconAssetPath: 'assets/images/history.png',
                   text: 'History',
                   onTap: () {
                     print('History tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/detective.png',
+                  iconAssetPath: 'assets/images/detective.png',
                   text: 'Detective',
                   onTap: () {
                     print('Detective tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/science.png',
+                  iconAssetPath: 'assets/images/science.png',
                   text: 'Science',
                   onTap: () {
                     print('Science tıklandı');
                   },
                 ),
                 ExploreCard(
-                  iconAssetPath: 'assets/icon/images/children.png',
+                  iconAssetPath: 'assets/images/children.png',
                   text: 'Children',
                   onTap: () {
                     print('Children tıklandı');

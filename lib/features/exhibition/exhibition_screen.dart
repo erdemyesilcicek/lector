@@ -24,7 +24,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'My Exhibition'),
+      appBar: const CustomAppBar(title: 'Exhibition'),
       backgroundColor: AppColors.background,
       body: StreamBuilder<List<ExhibitionBook>>(
         stream: _databaseService.getExhibitionStream(),
