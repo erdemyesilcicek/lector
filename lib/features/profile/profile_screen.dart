@@ -11,6 +11,7 @@ import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/features/profile/recommendations_screen.dart';
+import 'package:lector/features/settings/settings_screen.dart';
 import 'package:lector/widgets/banner_card.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/generated_cover_widget.dart';
@@ -251,7 +252,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       IconButton(
                         onPressed: () {
-                          // Profil ayarlarına git
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
                         },
                         icon: Icon(
                           Icons.settings_outlined,
@@ -328,7 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: AppConstants.paddingLarge),
                 BannerCard(
                   title: "Recommendation",
-                  description: "Discover books you’ll love.",
+                  description: "Discover books you'll love.",
                   assetImagePath: "assets/icon/images/light.png",
                   height: 100,
                   onTap: () {
