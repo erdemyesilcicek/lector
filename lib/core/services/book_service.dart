@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lector/core/models/book_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class BookService {
   final String _googleBaseUrl = 'https://www.googleapis.com/books/v1/volumes';
@@ -12,6 +13,32 @@ class BookService {
 
   final String _nytApiKey =
       '4WjeL8H2ScOZuAaxaGte4urMyOY3nlz1'; // SENİN ANAHTARIN BURADA
+
+  Future<Book?> _fetchBookByIsbn(String isbn) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_googleBaseUrl?q=isbn:$isbn'),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['items'] != null && (data['items'] as List).isNotEmpty) {
+          final bookJson = data['items'][0];
+          return Book.fromJson(bookJson);
+        } else {
+          print("Book not found on Google Books for ISBN: $isbn");
+          return null;
+        }
+      } else {
+        print(
+          'Google API Error (ISBN $isbn): Status Code ${response.statusCode}',
+        );
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching book by ISBN $isbn: $e');
+      return null;
+    }
+  }
 
   Future<Book?> fetchBookOfTheDay() async {
     final prefs = await SharedPreferences.getInstance();
@@ -28,6 +55,34 @@ class BookService {
         print("Error reading Book of the Day from cache: $e");
         await prefs.remove('book_of_the_day_date');
         await prefs.remove('book_of_the_day_data');
+      }
+    }
+    Future<List<Book>> fetchAwardWinners() async {
+      List<Book> awardWinningBooks = [];
+      try {
+        final String jsonString = await rootBundle.loadString(
+          'assets/data/award_winners.json',
+        );
+        final List<dynamic> awardList = json.decode(jsonString);
+
+        List<Future<Book?>> fetchFutures = [];
+        for (var entry in awardList) {
+          if (entry['isbn'] != null) {
+            fetchFutures.add(_fetchBookByIsbn(entry['isbn']));
+          }
+        }
+
+        final List<Book?> fetchedBooks = await Future.wait(fetchFutures);
+
+        awardWinningBooks = fetchedBooks.whereType<Book>().toList();
+
+        print(
+          "Fetched ${awardWinningBooks.length} award winning book details.",
+        );
+        return awardWinningBooks;
+      } catch (e) {
+        print('Error fetching award winners: $e');
+        return [];
       }
     }
 
@@ -80,6 +135,39 @@ class BookService {
       }
     } catch (e) {
       print('Error during NYT API call: $e');
+      return [];
+    }
+  }
+
+  Future<List<Book>> fetchAwardWinners() async {
+    List<Book> awardWinningBooks = [];
+    try {
+      final String jsonString = await rootBundle.loadString(
+        'assets/data/award_winners.json',
+      );
+      final List<dynamic> awardList = json.decode(jsonString);
+
+      List<Future<Book?>> fetchFutures = [];
+      for (var entry in awardList) {
+        if (entry['isbn'] != null) {
+          fetchFutures.add(_fetchBookByIsbn(entry['isbn']));
+        }
+      }
+
+      final List<Book?> fetchedBooks = await Future.wait(fetchFutures);
+      awardWinningBooks = fetchedBooks.whereType<Book>().toList();
+
+      print("Fetched ${awardWinningBooks.length} award winning book details.");
+
+      print(
+        ">>> fetchAwardWinners: Found ${fetchedBooks.length} potential books from ISBNs.",
+      );
+      print(
+        ">>> fetchAwardWinners: Filtered down to ${awardWinningBooks.length} valid Book objects BEFORE HomeScreen filtering.",
+      );
+      return awardWinningBooks;
+    } catch (e) {
+      print('Error fetching award winners: $e');
       return [];
     }
   }

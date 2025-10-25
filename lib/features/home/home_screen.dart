@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<Book?>? _bookOfTheDayFuture;
   Future<List<Book>>? _bestsellersFuture;
   Future<List<Book>>? _sciFiFuture;
+  Future<List<Book>>? _awardWinnersFuture;
 
   List<Book>? _searchResults;
   bool _isLoading = false;
@@ -47,6 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _readingListIds = readingList.map((b) => b.id).toSet();
     final excludedIds = _readBookIds.union(_readingListIds);
 
+    final awardWinnersUnfiltered = _bookService.fetchAwardWinners();
+
     setState(() {
       _bookOfTheDayFuture = _bookService.fetchBookOfTheDay();
       _bestsellersFuture = _fetchNytBestsellersAndFilter(excludedIds);
@@ -54,6 +57,18 @@ class _HomeScreenState extends State<HomeScreen> {
         () => _bookService.fetchBooksByGenre('science fiction'),
         excludedIds,
       );
+      _awardWinnersFuture = awardWinnersUnfiltered.then((unfilteredBooks) {
+        print(
+          ">>> HomeScreen _loadInitialData: Received ${unfilteredBooks.length} award winners BEFORE filtering.",
+        );
+        final filteredBooks = unfilteredBooks
+            .where((book) => !excludedIds.contains(book.id))
+            .toList();
+        print(
+          ">>> HomeScreen _loadInitialData: ${filteredBooks.length} award winners remain AFTER filtering excluded IDs.",
+        );
+        return filteredBooks;
+      });
     });
   }
 
@@ -204,10 +219,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildSectionTitle('NYT Bestsellers'),
                 const SizedBox(height: AppConstants.paddingMedium),
                 _buildHorizontalBookList(_bestsellersFuture),
+
+                const SizedBox(height: AppConstants.paddingLarge),
+                _buildSectionTitle('Critically Acclaimed'),
+                const SizedBox(height: AppConstants.paddingMedium),
+                _buildHorizontalBookList(_awardWinnersFuture),
+
                 const SizedBox(height: AppConstants.paddingLarge),
                 _buildSectionTitle('Science Fiction & Fantasy'),
                 const SizedBox(height: AppConstants.paddingMedium),
                 _buildHorizontalBookList(_sciFiFuture),
+
                 const SizedBox(height: AppConstants.paddingLarge),
               ],
             ),
@@ -454,49 +476,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHorizontalBookList(Future<List<Book>>? future) {
-    final theme = Theme.of(context);
+  Widget _buildHorizontalBookList(
+    Future<List<Book>>? future, {
+    String sectionTitle = '',
+  }) {
     if (future == null) {
+      print(
+        ">>> _buildHorizontalBookList ($sectionTitle): Future is null, showing loading.",
+      );
       return const SizedBox(
         height: 220,
         child: Center(child: CircularProgressIndicator()),
       );
     }
+
     return FutureBuilder<List<Book>>(
       future: future,
       builder: (context, snapshot) {
+        final theme = Theme.of(context);
         if (snapshot.connectionState == ConnectionState.waiting) {
+          print(
+            ">>> _buildHorizontalBookList ($sectionTitle): Waiting for future, showing loading.",
+          );
           return const SizedBox(
             height: 220,
             child: Center(child: CircularProgressIndicator()),
           );
         }
         if (snapshot.hasError) {
+          print(
+            "!!! _buildHorizontalBookList ($sectionTitle): Snapshot has error: ${snapshot.error}",
+          );
           return SizedBox(
             height: 220,
             child: Center(
               child: Text(
-                'Error: ${snapshot.error}',
+                'Could not load books.\nPlease try again later.',
+                textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
             ),
           );
         }
-        if (snapshot.hasData) {
-          final books = snapshot.data!;
-          if (books.isEmpty) {
-            return SizedBox(
-              height: 220,
-              child: Center(
-                child: Text(
-                  'No new books to show.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          print(
+            ">>> _buildHorizontalBookList ($sectionTitle): Snapshot has no data or data is empty.",
+          );
+          return SizedBox(
+            height: 220,
+            child: Center(
+              child: Text(
+                'No new books to show.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-            );
-          }
+            ),
+          );
+        }
+
+        final books = snapshot.data!;
+        print(
+          ">>> _buildHorizontalBookList ($sectionTitle): Data received, attempting to build ListView with ${books.length} items.",
+        );
+
+        try {
           return SizedBox(
             height: 220,
             child: ListView.builder(
@@ -506,6 +550,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               itemCount: books.length,
               itemBuilder: (context, index) {
+                if (index >= books.length) {
+                  print(
+                    "!!! _buildHorizontalBookList ($sectionTitle): Index out of bounds ($index/${books.length})",
+                  );
+                  return const SizedBox.shrink();
+                }
                 final book = books[index];
                 return Padding(
                   padding: const EdgeInsets.only(
@@ -514,6 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SizedBox(
                     width: 130,
                     child: BookCard(
+                      key: ValueKey(book.id),
                       title: book.title,
                       author: book.author,
                       coverUrl: book.coverUrl,
@@ -531,8 +582,21 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           );
+        } catch (e, stackTrace) {
+          print(
+            "!!! _buildHorizontalBookList ($sectionTitle): Error during ListView build: $e",
+          );
+          print(stackTrace);
+          return SizedBox(
+            height: 220,
+            child: Center(
+              child: Text(
+                'An error occurred displaying books.',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          );
         }
-        return const SizedBox.shrink();
       },
     );
   }
