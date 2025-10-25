@@ -7,6 +7,7 @@ class AppColors {
 
   // YENİ AYDINLIK TEMA (Medium Tarzı)
   static const Color primary = Color(0xFF1A1A1A); // Ana Renk (Metinler, Vurgulu İkonlar - Neredeyse Siyah)
+  static const Color star = Color.fromARGB(255, 255, 183, 0); // Vurgu Rengi (Butonlar için saf siyah deneyelim)
   static const Color accent = Color(0xFF000000); // Vurgu Rengi (Butonlar için saf siyah deneyelim)
   // Alternatif Vurgu: Eğer siyah buton çok sert durursa diye eski altın rengini yorumda tutalım.
   // static const Color accent = Color(0xFFD4AF37); 

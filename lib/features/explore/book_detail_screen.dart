@@ -361,7 +361,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               children: [
                 Icon(
                   Icons.star_half_rounded,
-                  color: secondaryTextColor,
+                  color: AppColors.star,
                   size: 22,
                 ),
                 const SizedBox(width: AppConstants.paddingMedium),
@@ -379,7 +379,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       index < exhibitionBook.rating
                           ? Icons.star_rounded
                           : Icons.star_border_rounded,
-                      color: AppColors.accent, // Altın rengi kalsın
+                      color: AppColors.star, // Altın rengi kalsın
                       size: 26,
                     );
                   }),
@@ -412,7 +412,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     padding: const EdgeInsets.only(top: 2.0),
                     child: Icon(
                       Icons.notes_rounded,
-                      color: secondaryTextColor,
+                      color: AppColors.star,
                       size: 22,
                     ),
                   ),

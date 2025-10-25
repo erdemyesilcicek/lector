@@ -36,7 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _profileDataFuture = _loadProfileData();
   }
 
-  // Hem istatistikleri hem de son eklenenleri tek seferde yükleyen metot
   Future<Map<String, dynamic>> _loadProfileData() async {
     final books = await _databaseService.getExhibitionBooks();
     final recentBooks = await _databaseService.getRecentExhibitionBooks(
@@ -88,7 +87,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return {'stats': stats, 'recentBooks': recentBooks};
   }
 
-  // E-postayı maskelemek için yardımcı fonksiyon
+  String _getInitials(String? email) {
+    if (email == null || email.isEmpty) return '?';
+
+    final username = email.split('@').first;
+    if (username.isEmpty) return '?';
+
+    // İlk harfi al ve büyük yap
+    return username[0].toUpperCase();
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+
+    if (hour < 12) {
+      return 'Good morning!';
+    } else if (hour < 17) {
+      return 'Good afternoon!';
+    } else {
+      return 'Good evening!';
+    }
+  }
+
   String _maskEmail(String? email) {
     if (email == null || !email.contains('@')) return 'No Email';
     final parts = email.split('@');
@@ -125,7 +145,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               profileData['recentBooks'] as List<ExhibitionBook>;
 
           return RefreshIndicator(
-            // Sayfayı yenileme özelliği
             onRefresh: () async {
               setState(() {
                 _profileDataFuture = _loadProfileData();
@@ -135,67 +154,183 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Column yerine ListView, uzun içerik için
               padding: const EdgeInsets.all(AppConstants.paddingMedium),
               children: [
-                // --- KULLANICI BİLGİSİ ---
-                Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 30,
-                      backgroundColor: AppColors.surface,
-                      child: Icon(
-                        Icons.person,
-                        size: 30,
-                        color: AppColors.textSecondary,
+                Container(
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.1),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
                       ),
-                      // TODO: Gelecekte profil resmi eklenebilir
-                    ),
-                    const SizedBox(width: AppConstants.paddingMedium),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome back!',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primary.withOpacity(0.6),
+                                ],
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 35,
+                              backgroundColor: Colors.transparent,
+                              child: Text(
+                                _getInitials(_currentUser?.email),
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        Text(
-                          _maskEmail(_currentUser?.email),
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.bold,
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.check,
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(width: AppConstants.paddingLarge),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.sunny,
+                                  size: 16,
+                                  color: Colors.amber,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _getGreeting(),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _maskEmail(_currentUser?.email),
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          // Profil ayarlarına git
+                        },
+                        icon: Icon(
+                          Icons.settings_outlined,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
 
                 // --- YENİDEN TASARLANMIŞ İSTATİSTİK KARTI ---
                 Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Reading Stats', style: AppTextStyles.headline3),
-                        const SizedBox(height: AppConstants.paddingSmall),
-                        const Divider(color: AppColors.textSecondary),
-                        _buildStatRow(
-                          Icons.book_outlined,
-                          'Total Books Read',
-                          '${stats['totalBooks']}',
-                        ),
-                        _buildStatRow(
-                          Icons.favorite_border,
-                          'Favorite Genre',
-                          stats['favoriteGenre'],
-                        ),
-                        _buildStatRow(
-                          Icons.edit_outlined,
-                          'Favorite Author',
-                          stats['favoriteAuthor'],
-                        ),
-                      ],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.surface,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.auto_graph_rounded,
+                                  color: AppColors.primary,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: AppConstants.paddingMedium),
+                              Text(
+                                'Reading Stats',
+                                style: AppTextStyles.headline3.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppConstants.paddingLarge),
+                          _buildModernStatRow(
+                            Icons.book_rounded,
+                            'Total Books Read',
+                            '${stats['totalBooks']}',
+                            Colors.teal,
+                          ),
+                          const SizedBox(height: AppConstants.paddingMedium),
+                          _buildModernStatRow(
+                            Icons.favorite_rounded,
+                            'Favorite Genre',
+                            stats['favoriteGenre'],
+                            Colors.pink,
+                          ),
+                          const SizedBox(height: AppConstants.paddingMedium),
+                          _buildModernStatRow(
+                            Icons.edit_rounded,
+                            'Favorite Author',
+                            stats['favoriteAuthor'],
+                            Colors.deepPurple,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -262,20 +397,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // İstatistik satırı için ikonlu yeni yardımcı widget
-  Widget _buildStatRow(IconData icon, String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
+  Widget _buildModernStatRow(
+    IconData icon,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 20),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
           const SizedBox(width: AppConstants.paddingMedium),
-          Text(title, style: AppTextStyles.bodyMedium),
-          const Spacer(),
-          Text(
-            value,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -70,7 +70,7 @@ class ExploreCard extends StatelessWidget {
               Text(
                 text,
                 style: textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500, // Hafif kalın
+                  fontWeight: FontWeight.w300, // Hafif kalın
                   color: theme.colorScheme.onSurfaceVariant, // Arka plana uygun renk
                 ),
                 textAlign: TextAlign.center,
