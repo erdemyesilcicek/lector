@@ -152,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppConstants.paddingLarge),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: AppColors.primary.withOpacity(0.1),
@@ -399,7 +399,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.2), width: 1.5),
         boxShadow: [
