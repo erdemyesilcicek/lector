@@ -233,22 +233,58 @@ class BookService {
 
   Future<List<dynamic>> searchBooks(String query) async {
     if (query.isEmpty) return [];
+
     try {
       final encodedQuery = Uri.encodeComponent(query);
-      final response = await http.get(
-        Uri.parse('$_googleBaseUrl?q=$encodedQuery&maxResults=20'),
-      );
+
+      // AKILLI SORGULAMA: Hem başlıkta hem yazarda ara + Sadece kitapları getir
+      // Örnek: q=(intitle:Dune OR inauthor:Dune)&printType=books
+      final String smartQuery = '(intitle:$encodedQuery OR inauthor:$encodedQuery)';
+      final String url = '$_googleBaseUrl?q=$smartQuery&printType=books&maxResults=40'; // Daha fazla sonuç alıp ayıklayacağız
+      print("Performing smart search with URL: $url"); // Sorguyu kontrol et
+
+      final response = await http.get(Uri.parse(url));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['items'] ?? [];
+        List<dynamic> items = data['items'] ?? [];
+
+        // --- UYGULAMA İÇİ TEKİLLEŞTİRME ---
+        if (items.isNotEmpty) {
+          final uniqueBooks = <String, Map<String, dynamic>>{}; // Benzersiz kitapları tutacak map
+          final seenKeys = <String>{}; // Başlık+Yazar kombinasyonunu takip et
+
+          for (var item in items) {
+            final volumeInfo = item['volumeInfo'];
+            if (volumeInfo == null) continue; // Geçersiz veri
+
+            final title = (volumeInfo['title'] ?? '').toLowerCase();
+            final authors = (volumeInfo['authors'] as List<dynamic>?)?.join(', ').toLowerCase() ?? '';
+            // Kitabı benzersiz kılan anahtar: başlık + ilk yazar (varsa)
+            final bookKey = '$title###${authors.split(',').first.trim()}';
+
+            // Eğer bu kitap kombinasyonunu daha önce görmediysek VEYA
+            // Bu yeni versiyon daha iyi görünüyorsa (örn: kapağı varsa) eskisini değiştir
+            if (!seenKeys.contains(bookKey) ||
+                (volumeInfo['imageLinks']?['thumbnail'] != null && uniqueBooks[bookKey]?['volumeInfo']?['imageLinks']?['thumbnail'] == null))
+            {
+              seenKeys.add(bookKey);
+              uniqueBooks[bookKey] = item as Map<String, dynamic>; // item'ı Map'e cast et
+            }
+          }
+          // Map'teki değerleri (yani seçilen en iyi versiyonları) listeye çevir
+          items = uniqueBooks.values.toList();
+          print("Deduplication complete. Returning ${items.length} unique results.");
+        }
+        return items;
+        // --- ---
+
       } else {
-        print(
-          'Google API Error (Search: $query): Status Code ${response.statusCode}',
-        );
-        return [];
+         print('Google API Error (Smart Search: $query): Status Code ${response.statusCode}');
+         return [];
       }
     } catch (e) {
-      print('Error searching books: $e');
+      print('Error during smart book search: $e');
       return [];
     }
   }

@@ -27,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<Book?>? _bookOfTheDayFuture;
   Future<List<Book>>? _bestsellersFuture;
-  Future<List<Book>>? _sciFiFuture;
   Future<List<Book>>? _awardWinnersFuture;
 
   List<Book>? _searchResults;
@@ -53,10 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _bookOfTheDayFuture = _bookService.fetchBookOfTheDay();
       _bestsellersFuture = _fetchNytBestsellersAndFilter(excludedIds);
-      _sciFiFuture = _fetchGoogleBooksAndFilter(
-        () => _bookService.fetchBooksByGenre('science fiction'),
-        excludedIds,
-      );
       _awardWinnersFuture = awardWinnersUnfiltered.then((unfilteredBooks) {
         print(
           ">>> HomeScreen _loadInitialData: Received ${unfilteredBooks.length} award winners BEFORE filtering.",
@@ -70,17 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return filteredBooks;
       });
     });
-  }
-
-  Future<List<Book>> _fetchGoogleBooksAndFilter(
-    Future<List<dynamic>> Function() fetcher,
-    Set<String> excludedIds,
-  ) async {
-    final booksJson = await fetcher();
-    return booksJson
-        .map((json) => Book.fromJson(json))
-        .where((book) => !excludedIds.contains(book.id))
-        .toList();
   }
 
   Future<List<Book>> _fetchNytBestsellersAndFilter(
@@ -146,11 +130,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: _searchController,
                   autofocus: true,
                   decoration: InputDecoration(
-                    hintText: 'Search books or authors...',
-                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                    hintText: 'Search title or author...',
+                    hintStyle: theme.textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
-                    ),
+                    ), // Stil aynı
                     border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
                   style: theme.textTheme.bodyLarge,
                   onSubmitted: _performSearch,

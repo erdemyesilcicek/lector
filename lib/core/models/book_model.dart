@@ -8,6 +8,9 @@ class Book {
   final String summary;
   final List<String> genres;
 
+
+  static const String placeholderCoverUrl = 'https://i.imgur.com/J5LVHEL.png';
+
   Book({
     required this.id,
     required this.title,
@@ -19,13 +22,26 @@ class Book {
 
   factory Book.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
-    final imageLinks = volumeInfo['imageLinks'] ?? {};
+    final imageLinks = volumeInfo['imageLinks'] as Map<String, dynamic>? ?? {};
     final description = volumeInfo['description'] ?? 'No summary available.';
-    final categories =
-        (volumeInfo['categories'] as List<dynamic>?)
-            ?.map((e) => e.toString())
-            .toList() ??
-        [];
+    final categories = (volumeInfo['categories'] as List<dynamic>?)
+        ?.map((e) => e.toString())?.toList() ?? [];
+
+    
+    String coverLink = placeholderCoverUrl; 
+    if (imageLinks['medium'] != null) {
+      coverLink = imageLinks['medium'];
+    }
+    else if (imageLinks['thumbnail'] != null) {
+      coverLink = imageLinks['thumbnail'];
+    }
+    else if (imageLinks['smallThumbnail'] != null) {
+      coverLink = imageLinks['smallThumbnail'];
+    }
+    // Google API bazen linkleri http olarak veriyor, https'e çevirelim (daha güvenli)
+    if (coverLink.startsWith('http://')) {
+       coverLink = coverLink.replaceFirst('http://', 'https://');
+    }
 
     return Book(
       id: json['id'] ?? 'Unknown ID_${DateTime.now().millisecondsSinceEpoch}',

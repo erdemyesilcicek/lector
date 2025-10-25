@@ -335,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 BannerCard(
                   title: "Recommendation",
                   description: "Discover books you'll love.",
-                  assetImagePath: "assets/icon/images/light.png",
+                  assetImagePath: "assets/images/light.png",
                   height: 100,
                   onTap: () {
                     Navigator.push(
