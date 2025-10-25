@@ -1,15 +1,15 @@
 // lib/features/profile/profile_screen.dart
 
-import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth'ı import et
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/constants/text_styles.dart';
-import 'package:lector/core/models/book_model.dart'; // Book modelini import et
+import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
-import 'package:lector/features/explore/book_detail_screen.dart'; // Detay ekranı için
+import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/features/profile/recommendations_screen.dart';
 import 'package:lector/widgets/banner_card.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
@@ -25,8 +25,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   final DatabaseService _databaseService = DatabaseService();
-  final User? _currentUser =
-      FirebaseAuth.instance.currentUser; // Mevcut kullanıcıyı al
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   late Future<Map<String, dynamic>> _profileDataFuture;
 
@@ -49,7 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     };
 
     if (books.isNotEmpty) {
-      // Favori Tür Hesaplaması
       final genreCounts = <String, int>{};
       for (var book in books) {
         if (book.rating >= 4) {
@@ -65,7 +63,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .key;
       }
 
-      // Favori Yazar Hesaplaması
       final authorCounts = <String, int>{};
       for (var book in books) {
         authorCounts[book.author] = (authorCounts[book.author] ?? 0) + 1;
@@ -93,7 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final username = email.split('@').first;
     if (username.isEmpty) return '?';
 
-    // İlk harfi al ve büyük yap
     return username[0].toUpperCase();
   }
 
@@ -114,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final parts = email.split('@');
     final name = parts[0];
     final domain = parts[1];
-    if (name.length <= 2) return email; // Çok kısaysa maskeleme
+    if (name.length <= 2) return email;
     return '${name.substring(0, 2)}***@$domain';
   }
 
@@ -130,9 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            print(
-              "Profile Load Error: ${snapshot.error}",
-            ); // Hata ayıklama için
+            print("Profile Load Error: ${snapshot.error}");
             return const Center(child: Text('Could not load profile data.'));
           }
           if (!snapshot.hasData) {
@@ -151,7 +145,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               });
             },
             child: ListView(
-              // Column yerine ListView, uzun içerik için
               padding: const EdgeInsets.all(AppConstants.paddingMedium),
               children: [
                 Container(
@@ -269,8 +262,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
-
-                // --- YENİDEN TASARLANMIŞ İSTATİSTİK KARTI ---
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -335,8 +326,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
-
-                // --- AKILLI ÖNERİLER BUTONU ---
                 BannerCard(
                   title: "Recommendation",
                   description: "Discover books you’ll love.",
@@ -353,20 +342,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: AppConstants.paddingLarge),
 
-                // --- SON EKLENENLER BÖLÜMÜ ---
                 if (recentBooks.isNotEmpty) ...[
                   Text('Recently Added', style: AppTextStyles.headline3),
                   const SizedBox(height: AppConstants.paddingMedium),
                   SizedBox(
-                    height: 180, // Bu bölümün yüksekliği
+                    height: 180,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: recentBooks.length,
                       itemBuilder: (context, index) {
                         final book = recentBooks[index];
-                        // BookCard'ı burada da kullanabiliriz
                         return SizedBox(
-                          width: 120, // Daha küçük genişlik
+                          width: 120,
                           child: _buildRecentBookCard(book),
                         );
                       },
@@ -374,10 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: AppConstants.paddingLarge),
                 ],
-
-                // --- ÇIKIŞ YAP BUTONU ---
                 Center(
-                  // Ortalamak için
                   child: TextButton.icon(
                     onPressed: () {
                       _authService.signOut();
@@ -455,7 +439,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Son eklenen kitaplar için özel, daha küçük kart
   Widget _buildRecentBookCard(ExhibitionBook exBook) {
     final bookForDetail = Book(
       id: exBook.id,

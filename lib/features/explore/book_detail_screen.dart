@@ -2,13 +2,12 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lector/core/constants/app_colors.dart'; // Renkleri kullanacağız
+import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
-// import 'package:lector/core/constants/text_styles.dart'; // Artık Theme'dan alacağız
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/models/exhibition_book_model.dart';
 import 'package:lector/core/services/database_service.dart';
-import 'package:lector/widgets/custom_app_bar.dart'; // Şeffaf AppBar
+import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/rating_modal_widget.dart';
 
 class BookDetailScreen extends StatefulWidget {
@@ -40,21 +39,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final book = widget.book;
-    final theme = Theme.of(context); // Temayı alıyoruz
+    final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
-    // Okunabilirlik için metin rengini doğrudan beyaz yapalım
     final Color primaryTextColor = Colors.white;
     final Color secondaryTextColor = Colors.white.withOpacity(0.7);
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // AppBar arkasına uzan
-      // Şeffaf AppBar (Geri butonu beyaz)
+      extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(title: ''),
       body: Stack(
-        fit: StackFit.expand, // Stack'in tüm alanı kaplamasını sağla
+        fit: StackFit.expand,
         children: [
-          // --- ARKA PLAN: Daha Yoğun Karartma ---
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -65,22 +60,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               ),
             ),
             child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 15,
-                sigmaY: 15,
-              ), // Blur biraz azaldı
-              child: Container(
-                color: Colors.black.withOpacity(0.75),
-              ), // Karartma arttı
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(color: Colors.black.withOpacity(0.75)),
             ),
           ),
 
-          // --- ANA İÇERİK (Kaydırılabilir) ---
           SafeArea(
-            bottom:
-                false, // Alttaki butona yer açmak için SafeArea'nın altını kapat
+            bottom: false,
             child: SingleChildScrollView(
-              // Altta buton için ekstra boşluk bırakıyoruz
               padding: const EdgeInsets.only(bottom: 100),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -89,13 +76,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(
-                      height: kToolbarHeight,
-                    ), // AppBar kadar boşluk
-                    // --- KAPAK ---
+                    const SizedBox(height: kToolbarHeight),
                     Container(
-                      width: 210, // Biraz daha büyük
-                      height: 315, // Orantılı
+                      width: 210,
+                      height: 315,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(
                           AppConstants.borderRadiusLarge,
@@ -117,12 +101,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                     const SizedBox(height: AppConstants.paddingLarge * 1.5),
 
-                    // --- BAŞLIK ve YAZAR ---
                     Text(
                       book.title,
                       textAlign: TextAlign.center,
                       style: textTheme.displayMedium?.copyWith(
-                        // displayMedium daha büyük
                         color: primaryTextColor,
                         fontWeight: FontWeight.bold,
                         shadows: [
@@ -135,21 +117,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       'by ${book.author}',
                       textAlign: TextAlign.center,
                       style: textTheme.titleMedium?.copyWith(
-                        // titleMedium daha okunaklı
                         color: secondaryTextColor,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
-                    const SizedBox(
-                      height: AppConstants.paddingLarge * 1.5,
-                    ), // Boşluğu artırdık
-                    // --- DİNAMİK BÖLÜM (EYLEM VEYA BİLGİ) ---
+                    const SizedBox(height: AppConstants.paddingLarge * 1.5),
                     StreamBuilder<ExhibitionBook?>(
                       stream: _exhibitionBookStream,
                       builder: (context, snapshot) {
                         final exhibitionBook = snapshot.data;
                         if (exhibitionBook != null) {
-                          // YENİ TASARIMLI BİLGİ BÖLÜMÜ
                           return _buildExhibitionDetails(
                             exhibitionBook,
                             theme,
@@ -157,12 +134,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             secondaryTextColor,
                           );
                         }
-                        // Eylem butonları
                         return StreamBuilder<bool>(
                           stream: _isInReadingListStream,
                           builder: (context, snapshot) {
                             final isInReadingList = snapshot.data ?? false;
-                            // YENİ TASARIMLI BUTONLAR
                             return _buildActionButtons(
                               book,
                               isInReadingList,
@@ -176,7 +151,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     Divider(color: secondaryTextColor.withOpacity(0.5)),
                     const SizedBox(height: AppConstants.paddingLarge),
 
-                    // --- ÖZET ---
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -193,7 +167,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           : book.summary,
                       style: textTheme.bodyLarge?.copyWith(
                         color: secondaryTextColor,
-                        height: 1.7, // Satır aralığını artır
+                        height: 1.7,
                       ),
                     ),
                   ],
@@ -206,21 +180,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // --- YENİDEN TASARLANMIŞ BUTONLAR ---
   Widget _buildActionButtons(Book book, bool isInReadingList, ThemeData theme) {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     return Row(
       children: [
-        // MARK AS READ (ANA BUTON)
         Expanded(
-          flex: 1, // Her iki buton eşit alan kaplasın
+          flex: 1,
           child: ElevatedButton(
             onPressed: () async {
               final result = await showModalBottomSheet<Map<String, dynamic>>(
                 context: context,
-                backgroundColor: Colors.black, // Arka plan şeffaf
+                backgroundColor: Colors.black,
                 builder: (context) => const RatingModal(),
                 isScrollControlled: true,
               );
@@ -240,35 +212,26 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               padding: const EdgeInsets.symmetric(
                 vertical: AppConstants.paddingMedium,
               ),
-              backgroundColor: colorScheme.secondary, // Vurgu rengi
-              foregroundColor: Colors.white, // Üstündeki yazı
+              backgroundColor: colorScheme.secondary,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
                   AppConstants.borderRadiusSmall,
-                ), // Daha köşeli
-                side: BorderSide(
-                  color: Colors.white.withOpacity(0.2), // Hafif beyaz border
-                  width: 1.0,
                 ),
               ),
-              minimumSize: const Size.fromHeight(48), // Minimum yükseklik eklendi
+              minimumSize: const Size.fromHeight(48),
             ),
             child: Text(
               'Mark as Read',
-              style: textTheme.labelLarge?.copyWith(
-                fontSize: 14,
-                color: Colors.white, // Metni beyaz yap
-              ),
+              style: textTheme.labelLarge?.copyWith(color: Colors.white),
             ),
           ),
         ),
         const SizedBox(width: AppConstants.paddingSmall),
 
-        // ADD TO LIST / REMOVE (İKİNCİL BUTON)
         Expanded(
-          flex: 1, // Her iki buton eşit alan kaplasın
+          flex: 1,
           child: ElevatedButton(
-            // Artık bu da ElevatedButton
             onPressed: () {
               if (isInReadingList) {
                 _databaseService.deleteFromReadingList(book.id);
@@ -288,18 +251,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               padding: const EdgeInsets.symmetric(
                 vertical: AppConstants.paddingMedium,
               ),
-              // İÇİ DOLU GÖRÜNÜM: Yüzey rengi (Aydınlıkta Beyaz, Karanlıkta Gri)
               backgroundColor: colorScheme.surface,
-              // Yazı rengi VURGU rengi olacak
               foregroundColor: colorScheme.secondary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
                   AppConstants.borderRadiusSmall,
-                ), // Daha köşeli
-                // Kenarlık ekleyelim
-                side: BorderSide(
-                  color: Colors.black.withOpacity(0.2), // Hafif siyah border
-                  width: 1.0,
                 ),
               ),
               elevation: 1,
@@ -314,7 +270,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // --- YENİDEN TASARLANMIŞ BİLGİ ALANI ---
   Widget _buildExhibitionDetails(
     ExhibitionBook exhibitionBook,
     ThemeData theme,
@@ -348,9 +303,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // RATING ROW
         InkWell(
-          // Tüm satıra tıklanabilir yaptık
           onTap: openEditModal,
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
           child: Padding(
@@ -359,11 +312,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.star_half_rounded,
-                  color: AppColors.star,
-                  size: 22,
-                ),
+                Icon(Icons.star_half_rounded, color: AppColors.star, size: 22),
                 const SizedBox(width: AppConstants.paddingMedium),
                 Text(
                   'Your Rating',
@@ -372,32 +321,26 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                 ),
                 const Spacer(),
-                // Yıldızlar
                 Row(
                   children: List.generate(5, (index) {
                     return Icon(
                       index < exhibitionBook.rating
                           ? Icons.star_rounded
                           : Icons.star_border_rounded,
-                      color: AppColors.star, // Altın rengi kalsın
+                      color: AppColors.star,
                       size: 26,
                     );
                   }),
                 ),
                 const SizedBox(width: AppConstants.paddingSmall / 2),
-                Icon(
-                  Icons.edit_outlined,
-                  color: secondaryTextColor,
-                  size: 18,
-                ), // Edit ikonu
+                Icon(Icons.edit_outlined, color: secondaryTextColor, size: 18),
               ],
             ),
           ),
         ),
 
-        // NOTES BÖLÜMÜ (varsa)
         if (exhibitionBook.notes.isNotEmpty) ...[
-          Divider(color: secondaryTextColor.withOpacity(0.3)), // Araya ayırıcı
+          Divider(color: secondaryTextColor.withOpacity(0.3)),
           InkWell(
             onTap: openEditModal,
             borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
@@ -406,7 +349,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 vertical: AppConstants.paddingSmall,
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 2.0),
@@ -421,9 +363,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     child: Text(
                       exhibitionBook.notes,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: primaryTextColor.withOpacity(
-                          0.9,
-                        ), // Daha okunaklı
+                        color: primaryTextColor.withOpacity(0.9),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -436,38 +376,32 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
         const SizedBox(height: AppConstants.paddingLarge),
 
-        // REMOVE BUTONU (Daha belirgin OutlinedButton)
         OutlinedButton.icon(
           onPressed: () async {
-            // Silme onayı isteyelim mi? Şimdilik direkt siliyoruz.
             await _databaseService.deleteFromExhibition(exhibitionBook.id);
             if (mounted) {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${exhibitionBook.title} removed from Exhibition.',
-                  ),
-                ),
+                const SnackBar(content: Text('Removed from Exhibition')),
               );
             }
           },
           icon: const Icon(Icons.delete_outline, size: 18),
           label: const Text('Remove from Exhibition'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: theme.colorScheme.error, // Hata rengi
+            foregroundColor: theme.colorScheme.error,
             side: BorderSide(color: theme.colorScheme.error.withOpacity(0.5)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 AppConstants.borderRadiusSmall,
-              ), // Daha köşeli
+              ),
             ),
             padding: const EdgeInsets.symmetric(
               vertical: AppConstants.paddingSmall,
-            ), // Kompakt
+            ),
           ),
         ),
       ],
     );
   }
-} // Sınıfın sonu
+}

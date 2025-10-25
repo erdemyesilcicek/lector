@@ -10,51 +10,49 @@ class AppTextStyles {
   static final TextStyle headline1 = GoogleFonts.lora(
     fontSize: 28,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary, // Güncellendi
+    color: AppColors.textPrimary,
   );
 
   static final TextStyle headline2 = GoogleFonts.lora(
     fontSize: 22,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary, // Güncellendi
+    color: AppColors.textPrimary,
   );
 
   static final TextStyle headline3 = GoogleFonts.lora(
     fontSize: 18,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary, // Güncellendi
+    color: AppColors.textPrimary,
   );
 
   static final TextStyle bodyLarge = GoogleFonts.inter(
     fontSize: 16,
     fontWeight: FontWeight.normal,
-    color: AppColors.textPrimary, // Güncellendi
-    height: 1.5, // Okunabilirlik için satır aralığı
+    color: AppColors.textPrimary,
+    height: 1.5,
   );
 
   static final TextStyle bodyMedium = GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: AppColors.textPrimary, // Güncellendi
+    color: AppColors.textPrimary,
   );
-  
+
   static final TextStyle bodySmall = GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary, // Güncellendi
+    color: AppColors.textSecondary,
   );
 
-  // Buton metni artık accent (siyah) arka plan üzerinde beyaz olacak
   static final TextStyle button = GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.bold,
-    color: AppColors.background, // Beyaz
+    color: AppColors.background,
   );
 
-  // Linkler veya özel vurgular için ikincil renk stili
-   static final TextStyle link = GoogleFonts.inter(
+  static final TextStyle link = GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary, // Orta Gri
+    color: AppColors.textSecondary,
   );
 }

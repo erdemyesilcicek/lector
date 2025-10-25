@@ -27,7 +27,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title:'Recommendations'),
+      appBar: CustomAppBar(title: 'Recommendations'),
       backgroundColor: AppColors.background,
       body: FutureBuilder<List<Book>>(
         future: _recommendationsFuture,
@@ -36,7 +36,9 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return const Center(child: Text('Could not generate recommendations.'));
+            return const Center(
+              child: Text('Could not generate recommendations.'),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
@@ -54,13 +56,19 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
             itemBuilder: (context, index) {
               final book = recommendations[index];
               return ListTile(
-                leading: Image.network(book.coverUrl, fit: BoxFit.cover, width: 50),
+                leading: Image.network(
+                  book.coverUrl,
+                  fit: BoxFit.cover,
+                  width: 50,
+                ),
                 title: Text(book.title),
                 subtitle: Text(book.author),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => BookDetailScreen(book: book)),
+                    MaterialPageRoute(
+                      builder: (context) => BookDetailScreen(book: book),
+                    ),
                   );
                 },
               );

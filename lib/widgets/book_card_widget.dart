@@ -31,25 +31,27 @@ class BookCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- KAPAK GÖRSELİ ALANI ---
             Expanded(
               child: Card(
                 elevation: 4,
                 shadowColor: Colors.black.withOpacity(0.4),
-                clipBehavior: Clip.antiAlias, // İçeriğin karttan taşmasını engeller
+                clipBehavior: Clip.antiAlias,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.borderRadiusMedium,
+                  ),
                 ),
                 child: hasRealCover
                     ? Image.network(
                         coverUrl,
-                        fit: BoxFit.cover, // Her zaman alanı kapla
-                        // Alanın tamamını doldurmasını garanti et
+                        fit: BoxFit.cover,
                         width: double.infinity,
                         height: double.infinity,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          return const Center(child: CircularProgressIndicator(strokeWidth: 2.0));
+                          return const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                          );
                         },
                         errorBuilder: (context, error, stackTrace) {
                           return GeneratedCover(title: title, author: author);
@@ -59,13 +61,14 @@ class BookCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.paddingSmall),
-            
-            // --- KİTAP BİLGİLERİ ---
+
             Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

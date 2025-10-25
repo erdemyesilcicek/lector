@@ -1,19 +1,17 @@
 // lib/features/home/home_screen.dart
 
-import 'dart:ui'; // ImageFilter.blur için gerekli
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
-import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/book_service.dart';
 import 'package:lector/core/services/database_service.dart';
-import 'package:lector/features/explore/book_detail_screen.dart'; // Bu import kalabilir, detay ekranı ortak
+import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/generated_cover_widget.dart';
 
-// SINIF ADI GÜNCELLENDİ
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -22,7 +20,6 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-// SINIF ADI GÜNCELLENDİ
 class _HomeScreenState extends State<HomeScreen> {
   final BookService _bookService = BookService();
   final DatabaseService _databaseService = DatabaseService();
@@ -74,11 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<Book>> _fetchNytBestsellersAndFilter(
     Set<String> excludedIds,
   ) async {
-    final booksJson = await _bookService
-        .fetchRealNytBestsellersJson(); // Gerçek NYT metodunu çağır
+    final booksJson = await _bookService.fetchRealNytBestsellersJson();
     return booksJson
-        .map((json) => Book.fromNytJson(json)) // NYT parser'ını kullan
-        .where((book) => !excludedIds.contains(book.id)) // ISBN'e göre filtrele
+        .map((json) => Book.fromNytJson(json))
+        .where((book) => !excludedIds.contains(book.id))
         .toList();
   }
 
@@ -116,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    final theme = Theme.of(context); // Tema'yı alalım
+    final theme = Theme.of(context);
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: AnimatedSwitcher(
@@ -126,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: _isSearchOpen
             ? AppBar(
-                // Search Bar AppBar
                 key: const ValueKey('searchBar'),
                 leading: null,
                 automaticallyImplyLeading: false,
@@ -159,9 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               )
             : CustomAppBar(
-                // Normal Title Bar
                 key: const ValueKey('titleBar'),
-                title: 'Lector', // Veya 'Home'
+                title: 'Lector',
                 actions: [
                   IconButton(
                     icon: Icon(Icons.search, color: theme.colorScheme.primary),
@@ -180,16 +174,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isSearching = _searchResults != null;
-    final theme = Theme.of(context); // Build context içinde tema'yı al
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: _buildAppBar(),
-      backgroundColor: theme.scaffoldBackgroundColor, // Tema rengi
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : isSearching
-          ? _buildSearchResults() // Arama sonuçlarını göster
-          : _buildDefaultContent(), // Normal içeriği göster
+          ? _buildSearchResults()
+          : _buildDefaultContent(),
     );
   }
 
@@ -198,9 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBookOfTheDaySection(), // Günün Kitabı
+          _buildBookOfTheDaySection(),
           Padding(
-            // Diğer bölümler için padding
             padding: const EdgeInsets.symmetric(
               horizontal: AppConstants.paddingMedium,
             ),
@@ -234,8 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
               horizontal: AppConstants.paddingMedium,
             ),
             child: AspectRatio(
-              // Yüksekliği dinamik yapmak için AspectRatio
-              aspectRatio: 16 / 10, // Yaklaşık bir oran
+              aspectRatio: 16 / 10,
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceVariant,
               ),
@@ -247,14 +239,14 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final book = snapshot.data!;
-        final theme = Theme.of(context); // Temayı al
+        final theme = Theme.of(context);
 
         return Padding(
           padding: const EdgeInsets.only(
             left: AppConstants.paddingMedium,
             right: AppConstants.paddingMedium,
             top: AppConstants.paddingSmall,
-          ), // Üstte biraz boşluk
+          ),
           child: Card(
             elevation: 8,
             shadowColor: Colors.black.withOpacity(0.3),
@@ -274,9 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               child: AspectRatio(
-                // Yüksekliği dinamik yapmak için AspectRatio
-                aspectRatio:
-                    16 / 10, // Bu oranı deneyebilir veya değiştirebilirsin
+                aspectRatio: 16 / 10,
                 child: Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
@@ -288,14 +278,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                       child: Container(
-                        color: Colors.black.withOpacity(0.35), // Hafif karartma
+                        color: Colors.black.withOpacity(0.35),
                         padding: const EdgeInsets.all(
                           AppConstants.paddingMedium,
-                        ), // Padding'i küçülttük
+                        ),
                         child: Row(
                           children: [
                             Container(
-                              width: 100, // Kapak genişliği küçültüldü
+                              width: 100,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(
                                   AppConstants.borderRadiusMedium,
@@ -358,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
-                                    maxLines: 2, // 2 satır yeterli
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(
@@ -390,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSearchResults() {
-    final theme = Theme.of(context); // Temayı al
+    final theme = Theme.of(context);
     if (_searchResults == null || _searchResults!.isEmpty) {
       return Center(
         child: Text(
@@ -411,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return ListTile(
           leading: SizedBox(
             width: 50,
-            height: 75, // Biraz daha küçük leading image
+            height: 75,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(
                 AppConstants.borderRadiusSmall,
@@ -459,20 +449,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: AppConstants.paddingSmall / 2,
-      ), // Başlığa hafif sol boşluk
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineSmall,
-      ), // Tema stilini kullan
+      padding: const EdgeInsets.only(left: AppConstants.paddingSmall / 2),
+      child: Text(title, style: Theme.of(context).textTheme.headlineSmall),
     );
   }
 
   Widget _buildHorizontalBookList(Future<List<Book>>? future) {
-    final theme = Theme.of(context); // Temayı al
+    final theme = Theme.of(context);
     if (future == null) {
-      // Yüklenirken iskelet yerine sadece animasyon gösterelim
       return const SizedBox(
         height: 220,
         child: Center(child: CircularProgressIndicator()),
@@ -514,25 +498,22 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
           return SizedBox(
-            height: 220, // BookCard yüksekliğine göre ayarlandı
+            height: 220,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              // İlk eleman için sol boşluk, diğerleri için sağ boşluk
               padding: const EdgeInsets.only(
                 left: AppConstants.paddingSmall / 2,
               ),
               itemCount: books.length,
               itemBuilder: (context, index) {
                 final book = books[index];
-                // Yeni BookCard tasarımını kullanıyoruz (varsayılan genişlik 140 idi)
                 return Padding(
                   padding: const EdgeInsets.only(
                     right: AppConstants.paddingMedium,
                   ),
                   child: SizedBox(
-                    width: 130, // Biraz daha dar kartlar
+                    width: 130,
                     child: BookCard(
-                      // BookCard widget'ını kullanıyoruz
                       title: book.title,
                       author: book.author,
                       coverUrl: book.coverUrl,
@@ -555,4 +536,4 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-} // Sınıfın sonu
+}

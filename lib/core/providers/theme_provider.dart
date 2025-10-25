@@ -4,16 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light; // Başlangıçta aydınlık tema
+  ThemeMode _themeMode = ThemeMode.light;
   static const String _themePrefKey = 'themeMode';
 
   ThemeMode get themeMode => _themeMode;
 
   ThemeProvider() {
-    _loadThemeMode(); // Uygulama başlarken hafızadaki temayı yükle
+    _loadThemeMode();
   }
 
-  // Hafızadan tema tercihini yükle
   Future<void> _loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
     final themeIndex = prefs.getInt(_themePrefKey) ?? ThemeMode.light.index;
@@ -21,10 +20,9 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Temayı değiştir ve hafızaya kaydet
   Future<void> toggleTheme(bool isDarkMode) async {
     _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners(); // Dinleyen widget'lara haber ver
+    notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_themePrefKey, _themeMode.index);

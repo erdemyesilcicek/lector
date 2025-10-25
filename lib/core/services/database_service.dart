@@ -10,12 +10,10 @@ class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Helper method to get the current user's ID
   String? get _userId => _auth.currentUser?.uid;
 
-  // Add a book to the user's reading list
   Future<void> addBookToReadingList(Book book) async {
-    if (_userId == null) return; // Exit if no user is logged in
+    if (_userId == null) return;
 
     // Structure: users -> {userId} -> reading_list -> {bookId}
     final docRef = _firestore
@@ -34,7 +32,6 @@ class DatabaseService {
     });
   }
 
-  // Add a book to the user's exhibition (read books)
   Future<void> addBookToExhibition(Book book, int rating, String notes) async {
     if (_userId == null) return;
 
@@ -50,28 +47,25 @@ class DatabaseService {
       'author': book.author,
       'coverUrl': book.coverUrl,
       'summary': book.summary,
-      'genres': book.genres, // EKLENDİ
+      'genres': book.genres,
       'addedAt': Timestamp.now(),
       'rating': rating,
       'notes': notes,
     });
   }
 
-  // Get a live stream of the user's reading list
   Stream<List<Book>> getReadingListStream() {
     if (_userId == null) {
-      return Stream.value([]); // Return an empty stream if no user
+      return Stream.value([]);
     }
 
     final collectionRef = _firestore
         .collection('users')
         .doc(_userId)
         .collection('reading_list')
-        .orderBy('addedAt', descending: true); // Show newest first
+        .orderBy('addedAt', descending: true);
 
-    // Listen to changes in the collection
     return collectionRef.snapshots().map((snapshot) {
-      // For each document, convert it to a Book object
       return snapshot.docs.map((doc) {
         final data = doc.data();
         return Book(
@@ -90,7 +84,6 @@ class DatabaseService {
     });
   }
 
-  // Get a live stream of the user's exhibition
   Stream<List<ExhibitionBook>> getExhibitionStream() {
     if (_userId == null) {
       return Stream.value([]);
@@ -104,13 +97,11 @@ class DatabaseService {
 
     return collectionRef.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        // Use our new model's factory constructor
         return ExhibitionBook.fromDoc(doc.data(), doc.id);
       }).toList();
     });
   }
 
-  // Delete a book from the user's reading list
   Future<void> deleteFromReadingList(String bookId) async {
     if (_userId == null) return;
 
@@ -123,7 +114,6 @@ class DatabaseService {
     await docRef.delete();
   }
 
-  // Delete a book from the user's exhibition
   Future<void> deleteFromExhibition(String bookId) async {
     if (_userId == null) return;
 
@@ -136,7 +126,6 @@ class DatabaseService {
     await docRef.delete();
   }
 
-  // Get the user's exhibition list once
   Future<List<ExhibitionBook>> getExhibitionBooks() async {
     if (_userId == null) {
       return [];
@@ -153,14 +142,10 @@ class DatabaseService {
     }).toList();
   }
 
-  // lib/core/services/database_service.dart dosyasının içine
-
   Future<List<Book>> getRecommendations() async {
-    // 1. ANALİZ: Kullanıcının tüm sergisini al
     final exhibition = await getExhibitionBooks();
     if (exhibition.length < 3) return [];
 
-    // 2. PUANLAMA: Türler ve yazarlar için lezzet puanları oluştur
     final genreScores = <String, int>{};
     final authorScores = <String, int>{};
 
@@ -238,7 +223,6 @@ class DatabaseService {
     return finalRecommendations;
   }
 
-  // Check if a specific book is in the reading list (live)
   Stream<bool> isBookInReadingList(String bookId) {
     if (_userId == null) return Stream.value(false);
     return _firestore
@@ -247,10 +231,9 @@ class DatabaseService {
         .collection('reading_list')
         .doc(bookId)
         .snapshots()
-        .map((snapshot) => snapshot.exists); // Returns true if the doc exists
+        .map((snapshot) => snapshot.exists);
   }
 
-  // Check if a specific book is in the exhibition (live)
   Stream<bool> isBookInExhibition(String bookId) {
     if (_userId == null) return Stream.value(false);
     return _firestore
@@ -262,7 +245,6 @@ class DatabaseService {
         .map((snapshot) => snapshot.exists);
   }
 
-  // Get a live stream of a specific book in the user's exhibition
   Stream<ExhibitionBook?> getExhibitionBookStream(String bookId) {
     if (_userId == null) return Stream.value(null);
     return _firestore
@@ -279,7 +261,6 @@ class DatabaseService {
         });
   }
 
-  // Get a set of all book IDs in the user's exhibition for quick lookups
   Future<Set<String>> getReadBookIds() async {
     if (_userId == null) return {};
 
@@ -289,11 +270,9 @@ class DatabaseService {
         .collection('exhibition')
         .get();
 
-    // Return a Set for efficient .contains() checks
     return snapshot.docs.map((doc) => doc.id).toSet();
   }
 
-  // Update the rating and notes of a book in the user's exhibition
   Future<void> updateExhibitionBook(
     String bookId,
     int newRating,
@@ -310,7 +289,6 @@ class DatabaseService {
     await docRef.update({'rating': newRating, 'notes': newNotes});
   }
 
-  // Get the 3 most recently added books from the user's exhibition
   Future<List<ExhibitionBook>> getRecentExhibitionBooks({int limit = 3}) async {
     if (_userId == null) return [];
 
@@ -318,10 +296,12 @@ class DatabaseService {
         .collection('users')
         .doc(_userId)
         .collection('exhibition')
-        .orderBy('addedAt', descending: true) // En yeniye göre sırala
-        .limit(limit) // Belirtilen sayıda al
+        .orderBy('addedAt', descending: true)
+        .limit(limit)
         .get();
 
-    return snapshot.docs.map((doc) => ExhibitionBook.fromDoc(doc.data(), doc.id)).toList();
+    return snapshot.docs
+        .map((doc) => ExhibitionBook.fromDoc(doc.data(), doc.id))
+        .toList();
   }
 }

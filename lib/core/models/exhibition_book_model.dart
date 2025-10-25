@@ -1,6 +1,5 @@
 // lib/core/models/exhibition_book_model.dart
 
-// ExhibitionBook, kullanıcının sergisindeki bir kitaptır ve Book modeline ek olarak puanlama ve not bilgilerini içerir.
 class ExhibitionBook {
   final String id;
   final String title;
@@ -22,7 +21,6 @@ class ExhibitionBook {
     required this.notes,
   });
 
-  // Firestore belgesinden ExhibitionBook oluşturmak için factory constructor
   factory ExhibitionBook.fromDoc(Map<String, dynamic> data, String docId) {
     return ExhibitionBook(
       id: docId,
@@ -30,7 +28,11 @@ class ExhibitionBook {
       author: data['author'] ?? 'No Author',
       coverUrl: data['coverUrl'] ?? '',
       summary: data['summary'] ?? 'No summary available.',
-      genres: (data['genres'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      genres:
+          (data['genres'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       rating: data['rating'] ?? 0,
       notes: data['notes'] ?? '',
     );

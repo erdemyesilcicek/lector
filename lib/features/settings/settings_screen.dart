@@ -11,7 +11,6 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ThemeProvider'ı alıyoruz
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
@@ -21,7 +20,6 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.paddingMedium),
         children: [
-          // Tema Değiştirme Satırı
           SwitchListTile.adaptive(
             title: Text(
               'Dark Mode',
@@ -37,11 +35,13 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const Divider(),
-          // Buraya gelecekte başka ayarlar eklenebilir
-          // Örn: Bildirim ayarları, Hesap ayarları vb.
+          // TODO: AYARLAR, Bildirim ayarları, Hesap ayarları vb.
           ListTile(
             leading: const Icon(Icons.info_outline),
-            title: Text('About Lector', style: Theme.of(context).textTheme.bodyLarge),
+            title: Text(
+              'About Lector',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
             onTap: () {
               // TODO: Hakkında sayfası veya popup'ı göster
             },

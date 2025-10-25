@@ -2,22 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart';
-// Constants ve Modeller
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/models/book_model.dart';
-import 'package:lector/core/models/exhibition_book_model.dart'; // Gerekli olabilir
-// Servisler
 import 'package:lector/core/services/book_service.dart';
 import 'package:lector/core/services/database_service.dart';
-// Diğer Ekranlar
-import 'package:lector/features/explore/book_detail_screen.dart'; // BookDetailScreen importu
 import 'package:lector/features/explore/explore_big_card.dart';
 import 'package:lector/features/explore/explore_card.dart';
-// Widgetlar
 import 'package:lector/widgets/custom_app_bar.dart';
-import 'package:lector/widgets/rating_modal_widget.dart'; // Mark as Read için
+import 'package:lector/widgets/rating_modal_widget.dart';
 
-// StatefulWidget'e dönüştürüyoruz çünkü veri çekeceğiz
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
 
@@ -26,31 +19,25 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-  // Servisleri ve Future'ı tanımla
   final BookService _bookService = BookService();
   final DatabaseService _databaseService = DatabaseService();
   Future<List<Book>>? _fantasyBooksFuture;
 
-  // Filtreleme için ID setleri
   Set<String> _readBookIds = {};
   Set<String> _readingListIds = {};
 
   @override
   void initState() {
     super.initState();
-    // Sayfa açılırken veriyi yükle
     _loadFantasyBooks();
   }
 
-  // Veriyi yükleyen ve filtreleyen metot
   Future<void> _loadFantasyBooks() async {
-    // Önce dışlanacak ID'leri al
     _readBookIds = await _databaseService.getReadBookIds();
     final readingList = await _databaseService.getReadingListStream().first;
     _readingListIds = readingList.map((b) => b.id).toSet();
     final excludedIds = _readBookIds.union(_readingListIds);
 
-    // Veriyi çek ve state'i güncelle
     setState(() {
       _fantasyBooksFuture = _fetchGoogleBooksAndFilter(
         () => _bookService.fetchBooksByGenre('fantasy'),
@@ -59,7 +46,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
   }
 
-  // Google Books API sonuçlarını filtreleyen metot (HomeScreen'dekiyle aynı)
   Future<List<Book>> _fetchGoogleBooksAndFilter(
     Future<List<dynamic>> Function() fetcher,
     Set<String> excludedIds,
@@ -73,28 +59,22 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Tema'yı alalım
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'Explore'),
       backgroundColor: theme.scaffoldBackgroundColor,
-      // Ana gövdeyi SingleChildScrollView ile sarıyoruz
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Başlıkları sola yasla
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ÜST BÖLÜM: Kategori Kartları (GridView) ---
             Padding(
               padding: const EdgeInsets.all(AppConstants.paddingMedium),
-              child: Text(
-                'Categories',
-                style: theme.textTheme.headlineSmall,
-              ), // Bölüm Başlığı
+              child: Text('Categories', style: theme.textTheme.headlineSmall),
             ),
             GridView.count(
-              shrinkWrap: true, // ListView içinde boyutunu küçültmesi için
-              physics:
-                  const NeverScrollableScrollPhysics(), // GridView kendi başına kaymasın
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppConstants.paddingMedium,
               ),
@@ -103,7 +83,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
               mainAxisSpacing: AppConstants.paddingMedium,
               childAspectRatio: 0.9,
               children: <Widget>[
-                // Senin eklediğin ExploreCard'lar buraya gelecek (içerikleri aynı)
                 ExploreCard(
                   iconAssetPath: 'assets/icon/images/sci-fi.png',
                   text: 'Sci-Fi',
@@ -170,36 +149,29 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ],
             ),
 
-            // --- ALT BÖLÜM: Yatay Kayan Kitap Listesi ---
             Padding(
               padding: const EdgeInsets.only(
                 left: AppConstants.paddingMedium,
                 right: AppConstants.paddingMedium,
-                top: AppConstants.paddingLarge, // Üstteki Grid ile araya boşluk
-                bottom: AppConstants.paddingSmall, // Liste öncesi boşluk
+                top: AppConstants.paddingLarge,
+                bottom: AppConstants.paddingSmall,
               ),
-              child: Text(
-                'Classics',
-                style: theme.textTheme.headlineSmall,
-              ), // Bölüm Başlığı
+              child: Text('Classics', style: theme.textTheme.headlineSmall),
             ),
-            // FutureBuilder ile yatay listeyi oluştur
-            _buildHorizontalBigCardList(_fantasyBooksFuture), // Yeni liste metodu
+            _buildHorizontalBigCardList(_fantasyBooksFuture),
 
-            const SizedBox(height: AppConstants.paddingLarge), // En alta boşluk
+            const SizedBox(height: AppConstants.paddingLarge),
           ],
         ),
       ),
     );
   }
 
-  // ExploreBigCard İçin Yatay Liste Metodu (HomeScreen'den alındı ve uyarlandı)
   Widget _buildHorizontalBigCardList(Future<List<Book>>? future) {
     final theme = Theme.of(context);
-    const double cardHeight = 280.0; // BigCard yüksekliği
-    const double cardWidth = cardHeight * 0.7; // Genişliği
+    const double cardHeight = 280.0;
+    const double cardWidth = cardHeight * 0.7;
 
-    // Future null ise veya henüz tamamlanmadıysa yükleme göstergesi
     if (future == null) {
       return const SizedBox(
         height: cardHeight,
@@ -252,7 +224,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
             itemCount: books.length,
             itemBuilder: (context, index) {
               final book = books[index];
-              // Her kart için okuma listesi durumunu dinle
               return StreamBuilder<bool>(
                 stream: _databaseService.isBookInReadingList(book.id),
                 builder: (context, listSnapshot) {
@@ -288,13 +259,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           }
                           setState(() {
                             _readBookIds.add(book.id);
-                          }); // Listeyi anında filtrelemek için
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Saved to your Exhibition!'),
                             ),
                           );
-                          // Bu ekranda listeyi yeniden yüklemeye gerek yok, ID filtrelemesi yeterli
                         }
                       },
                       onToggleReadingList: () {
@@ -313,7 +283,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             ),
                           );
                         }
-                        // Anlık state güncellemesi StreamBuilder tarafından yapılır
                       },
                     ),
                   );
@@ -325,4 +294,4 @@ class _ExploreScreenState extends State<ExploreScreen> {
       },
     );
   }
-} // Sınıfın sonu
+}

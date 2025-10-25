@@ -26,7 +26,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Geri dönebilmek için bir app bar ekledik
         title: const Text('Sign Up'),
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -68,7 +67,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     _emailController.text,
                     _passwordController.text,
                   );
-                  // Pop the screen to go back to the login screen after signing up
                   if (mounted) Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(

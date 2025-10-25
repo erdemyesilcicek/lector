@@ -1,8 +1,6 @@
 name: lector
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -25,6 +23,7 @@ dependencies:
   provider: ^6.1.5+1
   flutter_card_swiper: ^7.1.0
   flutter_svg: ^2.2.1
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -39,19 +38,15 @@ flutter:
     - assets/icon/
 
 flutter_launcher_icons:
-  android: true # Android için ikon oluştur
-  ios: true # iOS için ikon oluştur
-  image_path: "assets/icon/icon.png" # İkonumuzun yolu
-  min_sdk_android: 21 # a splash screen background color.
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
   remove_alpha_ios: true
 
-# Bu satırın dosyanın en solunda olduğundan emin ol
 flutter_native_splash:
-  color: "#4A2C2A" # Koyu kahverengi arka plan rengi (HEX kodu)
-  # Veya istersen resim (arka plan görseli) de kullanabilirsin:
-  # background_image: "assets/splash_background.png" 
-  image: "assets/icon/splash_icon.png" # İkonumuzun yolu (şeffaf PNG olmalı)
-  # Android 12 ve sonrası için de splash screen ayarlaması
+  color: "#4A2C2A"
+  image: "assets/icon/splash_icon.png"
   android_12:
     color: "#4A2C2A"
     image: "assets/icon/splash_icon.png"

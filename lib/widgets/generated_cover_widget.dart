@@ -12,13 +12,7 @@ class GeneratedCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Başlığın hash kodunu kullanarak tutarlı ama "rastgele" bir renk seçiyoruz
-    // Bu sayede aynı kitap her zaman aynı renk kapakla görünecek
-    final colorIndex = title.hashCode % Colors.primaries.length;
-    final backgroundColor = Colors.primaries[colorIndex].withOpacity(0.9);
-
     return Container(
-      // Kart widget'ı ile aynı yuvarlak köşelere sahip olmalı
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
@@ -34,7 +28,6 @@ class GeneratedCover extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-                // Kapak üstü yazısı için özel stil
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: Colors.white, 
                   fontWeight: FontWeight.bold,
