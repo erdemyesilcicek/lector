@@ -89,6 +89,9 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
   }
 
   Widget _buildExhibitionCard(ExhibitionBook exBook) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     final bool hasRealCover = !exBook.coverUrl.contains(
       'i.imgur.com/J5LVHEL.png',
     );
@@ -157,9 +160,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
               exBook.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           Padding(
@@ -168,7 +169,10 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
               exBook.author,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+              style: textTheme.bodySmall?.copyWith(
+                fontSize: 10,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
           ),
         ],

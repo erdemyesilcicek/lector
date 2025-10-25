@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/constants/text_styles.dart';
@@ -259,9 +260,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           );
                         },
-                        icon: Icon(
-                          Icons.settings_outlined,
+                        icon: SvgPicture.asset(
+                          'assets/icon/settings.svg',
                           color: AppColors.textSecondary,
+                          width: AppConstants.iconSizeMedium,
+                          height: AppConstants.iconSizeMedium,
                         ),
                       ),
                     ],

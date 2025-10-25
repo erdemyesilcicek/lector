@@ -8,6 +8,7 @@ import 'package:lector/features/home/home_screen.dart';
 import 'package:lector/features/profile/profile_screen.dart';
 import 'package:lector/features/reading_list/reading_list_screen.dart';
 import 'package:lector/features/exhibition/exhibition_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -60,32 +61,32 @@ class _NavigationScreenState extends State<NavigationScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(
-            icon: Icons.home,
-            selectedIcon: Icons.home,
+            iconPath: 'assets/icon/home-empty.svg',
+            selectedIconPath: 'assets/icon/home-fill.svg',
             index: 0,
             label: 'Home',
           ),
           _buildNavItem(
-            icon: Icons.book_outlined,
-            selectedIcon: Icons.book,
+            iconPath: 'assets/icon/exhibition-empty.svg',
+            selectedIconPath: 'assets/icon/exhibition-fill.svg',
             index: 1,
             label: 'Exhibition',
           ),
           _buildNavItem(
-            icon: Icons.explore_outlined,
-            selectedIcon: Icons.explore,
+            iconPath: 'assets/icon/explore-empty.svg',
+            selectedIconPath: 'assets/icon/explore-fill.svg',
             index: 2,
             label: 'Explore',
           ),
           _buildNavItem(
-            icon: Icons.bookmark_outline,
-            selectedIcon: Icons.bookmark,
+            iconPath: 'assets/icon/list-empty.svg',
+            selectedIconPath: 'assets/icon/list-fill.svg',
             index: 3,
             label: 'Reading List',
           ),
           _buildNavItem(
-            icon: Icons.person_outline,
-            selectedIcon: Icons.person,
+            iconPath: 'assets/icon/profile-empty.svg',
+            selectedIconPath: 'assets/icon/profile-fill.svg',
             index: 4,
             label: 'Profile',
           ),
@@ -95,8 +96,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
   }
 
   Widget _buildNavItem({
-    required IconData icon,
-    required IconData selectedIcon,
+    required String iconPath,
+    required String selectedIconPath,
     required int index,
     required String label,
   }) {
@@ -110,10 +111,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isSelected ? selectedIcon : icon,
+            SvgPicture.asset(
+              isSelected ? selectedIconPath : iconPath,
               color: color,
-              size: AppConstants.iconSizeMedium,
+              width: AppConstants.iconSizeMedium,
+              height: AppConstants.iconSizeMedium,
             ),
             const SizedBox(height: 4),
             Text(

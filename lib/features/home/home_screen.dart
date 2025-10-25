@@ -2,6 +2,7 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/models/book_model.dart';
@@ -159,7 +160,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Lector',
                 actions: [
                   IconButton(
-                    icon: Icon(Icons.search, color: theme.colorScheme.primary),
+                    icon: SvgPicture.asset(
+                      'assets/icon/search.svg',
+                      color: theme.colorScheme.primary,
+                      width: AppConstants.iconSizeMedium,
+                      height: AppConstants.iconSizeMedium,
+                    ),
                     onPressed: () {
                       setState(() {
                         _isSearchOpen = true;

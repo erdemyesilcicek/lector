@@ -47,7 +47,6 @@ class BookService {
     final storedBookJsonString = prefs.getString('book_of_the_day_data');
 
     if (storedDate == today && storedBookJsonString != null) {
-      print("Fetching Book of the Day from CACHE.");
       try {
         final bookJson = json.decode(storedBookJsonString);
         return Book.fromNytJson(bookJson);

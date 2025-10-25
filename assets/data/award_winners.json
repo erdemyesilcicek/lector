@@ -13,7 +13,19 @@
   },
   {
     "isbn": "9780374112613",
-    "award_note": "National Book Award Winner 2024"
+    "award_note": "National Book Award Winner 2024 (Fiction)"
+  },
+  {
+    "isbn": "9781668048258",
+    "award_note": "National Book Award Finalist 2024"
+  },
+  {
+    "isbn": "9781668016141",
+    "award_note": "National Book Award Finalist 2024"
+  },
+  {
+    "isbn": "9781644452746",
+    "award_note": "National Book Award Finalist 2024"
   },
   {
     "isbn": "9780593412996",
@@ -25,7 +37,11 @@
   },
   {
     "isbn": "9781594632943",
-    "award_note": "Pulitzer Prize Winner 2023"
+    "award_note": "Pulitzer Prize Winner 2023 (Trust)"
+  },
+  {
+    "isbn": "9780316479633",
+    "award_note": "Pulitzer Prize Winner 2023 (Demon Copperhead)"
   },
   {
     "isbn": "9780374609149",
@@ -36,7 +52,79 @@
     "award_note": "National Book Award Finalist 2023"
   },
   {
+    "isbn": "9781644450841",
+    "award_note": "National Book Award Winner 2022"
+  },
+  {
+    "isbn": "9781787333678",
+    "award_note": "Booker Prize Winner 2022"
+  },
+  {
+    "isbn": "9780399592534",
+    "award_note": "Pulitzer Prize Winner 2022"
+  },
+  {
+    "isbn": "9780525520932",
+    "award_note": "National Book Award Winner 2021"
+  },
+  {
+    "isbn": "9780525559482",
+    "award_note": "Booker Prize Winner 2021"
+  },
+  {
+    "isbn": "9780062976930",
+    "award_note": "Pulitzer Prize Winner 2021"
+  },
+  {
+    "isbn": "9781984856140",
+    "award_note": "Women's Prize for Fiction Winner 2024"
+  },
+  {
+    "isbn": "9780063251922",
+    "award_note": "Women's Prize for Fiction Winner 2023"
+  },
+  {
+    "isbn": "9780385548729",
+    "award_note": "Women's Prize for Fiction Winner 2022"
+  },
+  {
+    "isbn": "9781644450469",
+    "award_note": "International Booker Prize Winner 2023"
+  },
+  {
+    "isbn": "9781787333104",
+    "award_note": "International Booker Prize Winner 2022"
+  },
+  {
+    "isbn": "9781594634282",
+    "award_note": "International Booker Prize Winner 2021"
+  },
+  {
     "isbn": "9781101906118",
-    "award_note": "Intl. Booker / Nobel Laureate Work"
+    "award_note": "Nobel Laureate / Intl. Booker"
+  },
+  {
+    "isbn": "9780385540860",
+    "award_note": "National Book Critics Circle Award 2023 (Fiction)"
+  },
+  {
+    "isbn": "9780593490796",
+    "award_note": "National Book Critics Circle Award 2022 (Fiction)"
+  },
+  {
+    "isbn": "9781644450544",
+    "award_note": "PEN/Faulkner Award Winner 2024"
+  },
+  {
+    "isbn": "9780593300942",
+    "award_note": "PEN/Faulkner Award Winner 2023"
+  },
+  {
+    "isbn": "9780374604922",
+    "award_note": "PEN/Hemingway Award Winner 2024"
+  },
+  {
+    "isbn": "9780593446861",
+    "award_note": "PEN/Hemingway Award Winner 2023"
   }
 ]
