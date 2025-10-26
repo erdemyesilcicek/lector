@@ -1,6 +1,6 @@
 // lib/main.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lector/core/constants/app_theme.dart';
 import 'package:lector/core/providers/theme_provider.dart';
@@ -11,6 +11,15 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Status bar'ı siyah yap
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -24,15 +33,24 @@ class LectorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return MaterialApp(
-      title: 'Lector',
-      debugShowCheckedModeBanner: false,
-      themeMode: themeProvider.themeMode,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      home: const AuthGate(),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+      child: MaterialApp(
+        title: 'Lector',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme.copyWith(
+          appBarTheme: AppTheme.lightTheme.appBarTheme.copyWith(
+            systemOverlayStyle: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+            ),
+          ),
+        ),
+        home: const AuthGate(),
+      ),
     );
   }
 }

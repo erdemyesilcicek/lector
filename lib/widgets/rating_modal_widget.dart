@@ -80,7 +80,7 @@ class _RatingModalState extends State<RatingModal> {
                   index < _rating
                       ? Icons.star_rounded
                       : Icons.star_border_rounded,
-                  color: AppColors.accent,
+                  color: AppColors.star,
                   size: 40,
                 ),
               );
@@ -93,7 +93,7 @@ class _RatingModalState extends State<RatingModal> {
               hintText: 'Your notes (optional)',
             ),
             style: textTheme.bodyLarge,
-            maxLines: 3,
+            maxLines: 1,
             scrollPadding: const EdgeInsets.only(bottom: 100),
           ),
           const SizedBox(height: AppConstants.paddingLarge),
@@ -110,8 +110,17 @@ class _RatingModalState extends State<RatingModal> {
               padding: const EdgeInsets.symmetric(
                 vertical: AppConstants.paddingMedium,
               ),
+              backgroundColor: _rating == 0 ? null : AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+              ),
             ),
-            child: Text('Save Changes', style: textTheme.labelLarge),
+            child: Text(
+              'Save Rating',
+              style: textTheme.headlineSmall?.copyWith(
+                color: _rating == 0 ? null : AppColors.background,
+              ),
+            ),
           ),
         ],
       ),

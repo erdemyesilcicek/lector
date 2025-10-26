@@ -118,6 +118,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: const CustomAppBar(title: 'Profile'),
       backgroundColor: AppColors.background,
@@ -302,9 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const SizedBox(width: AppConstants.paddingMedium),
                               Text(
                                 'Reading Stats',
-                                style: AppTextStyles.headline3.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: theme.textTheme.headlineSmall,
                               ),
                             ],
                           ),
@@ -352,7 +352,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: AppConstants.paddingLarge),
 
                 if (recentBooks.isNotEmpty) ...[
-                  Text('Recently Added', style: AppTextStyles.headline3),
+                  Text('Recently Added', style: theme.textTheme.headlineSmall),
                   const SizedBox(height: AppConstants.paddingMedium),
                   SizedBox(
                     height: 180,
