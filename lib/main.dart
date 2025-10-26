@@ -7,6 +7,7 @@ import 'package:lector/core/providers/theme_provider.dart';
 import 'package:lector/features/authentication/auth_gate.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'package:lector/features/onboard/onboarding_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,7 @@ class LectorApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const AuthGate(),
+        home: const OnboardingGate(),
       ),
     );
   }
