@@ -12,6 +12,7 @@ import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/book_card_widget.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/generated_cover_widget.dart';
+import 'package:lector/widgets/shimmer_loading.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -230,17 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
       future: _bookOfTheDayFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.paddingMedium,
-            ),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Container(
-                color: Theme.of(context).colorScheme.surfaceVariant,
-              ),
-            ),
-          );
+          return const BookOfTheDayShimmer();
         }
         if (!snapshot.hasData || snapshot.data == null) {
           return const SizedBox.shrink();
@@ -484,9 +475,23 @@ class _HomeScreenState extends State<HomeScreen> {
           print(
             ">>> _buildHorizontalBookList ($sectionTitle): Waiting for future, showing loading.",
           );
-          return const SizedBox(
+          return SizedBox(
             height: 220,
-            child: Center(child: CircularProgressIndicator()),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(
+                left: AppConstants.paddingSmall / 2,
+              ),
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    right: AppConstants.paddingMedium,
+                  ),
+                  child: const BookCardShimmer(),
+                );
+              },
+            ),
           );
         }
         if (snapshot.hasError) {

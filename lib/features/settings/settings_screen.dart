@@ -16,11 +16,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final AuthService _authService = AuthService();
-  final User? _currentUser = FirebaseAuth.instance.currentUser;
-  
-  bool _notificationsEnabled = true;
-  bool _emailNotifications = false;
-  bool _darkModeEnabled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,94 +38,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.paddingMedium),
         children: [
-          // Account Section
-          _buildSectionHeader('Account', Icons.person_outline),
-          const SizedBox(height: AppConstants.paddingSmall),
-          _buildSettingsCard([
-            _buildSettingsTile(
-              icon: Icons.email_outlined,
-              title: 'Email',
-              subtitle: _currentUser?.email ?? 'Not available',
-              onTap: () {
-                // Email değiştirme işlemi
-                _showComingSoonDialog();
-              },
-            ),
-            const Divider(height: 1),
-            _buildSettingsTile(
-              icon: Icons.lock_outline,
-              title: 'Change Password',
-              subtitle: 'Update your password',
-              onTap: () {
-                _showComingSoonDialog();
-              },
-            ),
-            const Divider(height: 1),
-            _buildSettingsTile(
-              icon: Icons.delete_outline,
-              title: 'Delete Account',
-              subtitle: 'Permanently delete your account',
-              onTap: () {
-                _showDeleteAccountDialog();
-              },
-              trailing: Icon(Icons.chevron_right, color: AppColors.error),
-              isDestructive: true,
-            ),
-          ]),
-
-          const SizedBox(height: AppConstants.paddingLarge),
-
-          // Notifications Section
-          _buildSectionHeader('Notifications', Icons.notifications_outlined),
-          const SizedBox(height: AppConstants.paddingSmall),
-          _buildSettingsCard([
-            _buildSwitchTile(
-              icon: Icons.notifications_active_outlined,
-              title: 'Push Notifications',
-              subtitle: 'Receive push notifications',
-              value: _notificationsEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-              },
-            ),
-            const Divider(height: 1),
-            _buildSwitchTile(
-              icon: Icons.email_outlined,
-              title: 'Email Notifications',
-              subtitle: 'Receive email updates',
-              value: _emailNotifications,
-              onChanged: (value) {
-                setState(() {
-                  _emailNotifications = value;
-                });
-              },
-            ),
-          ]),
-
-          const SizedBox(height: AppConstants.paddingLarge),
-
-          // Appearance Section
-          _buildSectionHeader('Appearance', Icons.palette_outlined),
-          const SizedBox(height: AppConstants.paddingSmall),
-          _buildSettingsCard([
-            _buildSwitchTile(
-              icon: Icons.dark_mode_outlined,
-              title: 'Dark Mode',
-              subtitle: 'Enable dark theme',
-              value: _darkModeEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _darkModeEnabled = value;
-                });
-                _showComingSoonDialog();
-              },
-            ),
-          ]),
-
-          const SizedBox(height: AppConstants.paddingLarge),
-
           // About Section
           _buildSectionHeader('About', Icons.info_outline),
           const SizedBox(height: AppConstants.paddingSmall),
@@ -143,7 +50,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showComingSoonDialog();
               },
             ),
-            const Divider(height: 1),
+          ]),
+          const SizedBox(height: AppConstants.paddingSmall),
+          _buildSettingsCard([
             _buildSettingsTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
@@ -152,7 +61,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showComingSoonDialog();
               },
             ),
-            const Divider(height: 1),
+          ]),
+          const SizedBox(height: AppConstants.paddingSmall),
+          _buildSettingsCard([
             _buildSettingsTile(
               icon: Icons.help_outline,
               title: 'Help & Support',
@@ -161,11 +72,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showComingSoonDialog();
               },
             ),
-            const Divider(height: 1),
+          ]),
+          const SizedBox(height: AppConstants.paddingSmall),
+          _buildSettingsCard([
             _buildSettingsTile(
               icon: Icons.info_outline,
               title: 'App Version',
-              subtitle: '1.0.0',
+              subtitle: '0.9.0',
               onTap: null,
               trailing: const SizedBox.shrink(),
             ),
@@ -177,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.paddingMedium,
+              horizontal: AppConstants.paddingSmall,
             ),
             child: ElevatedButton.icon(
               onPressed: () {
@@ -190,9 +103,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                elevation: 0,
+                elevation: 2,
               ),
             ),
           ),
@@ -286,46 +199,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSwitchTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.primary,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        title,
-        style: AppTextStyles.bodyMedium.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textSecondary,
-        ),
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: AppColors.primary,
-      ),
-    );
-  }
-
   void _showSignOutDialog() {
     showDialog(
       context: context,
@@ -349,9 +222,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              _authService.signOut();
+              await _authService.signOut();
+              if (mounted) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
@@ -361,51 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Delete Account',
-          style: AppTextStyles.headline3.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.error,
-          ),
-        ),
-        content: const Text(
-          'This action cannot be undone. All your data will be permanently deleted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Delete account işlemi
-              _showComingSoonDialog();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Delete'),
           ),
         ],
       ),

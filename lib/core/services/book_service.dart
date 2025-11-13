@@ -211,13 +211,46 @@ class BookService {
 
   Future<List<dynamic>> fetchBooksByGenre(String genre) async {
     try {
+      // Popüler ve yeni yayınlanan kitapları getir
       final encodedGenre = Uri.encodeComponent(genre);
+      
+      // Önce bestseller ve popüler kitapları dene
       final response = await http.get(
-        Uri.parse('$_googleBaseUrl?q=subject:$encodedGenre&maxResults=10'),
+        Uri.parse(
+          '$_googleBaseUrl?q=subject:$encodedGenre&orderBy=relevance&maxResults=20&langRestrict=en&printType=books',
+        ),
       );
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['items'] ?? [];
+        List<dynamic> items = data['items'] ?? [];
+        
+        // Kaliteli kitapları filtrele: kapak resmi ve yeterli bilgiye sahip olanlar
+        items = items.where((item) {
+          final volumeInfo = item['volumeInfo'];
+          if (volumeInfo == null) return false;
+          
+          // Kapak resmi kontrolü
+          final hasImage = volumeInfo['imageLinks']?['thumbnail'] != null;
+          
+          // Yazar bilgisi kontrolü
+          final hasAuthor = volumeInfo['authors'] != null && 
+                           (volumeInfo['authors'] as List).isNotEmpty;
+          
+          // Yayın tarihi kontrolü (2000 sonrası tercih et)
+          final publishedDate = volumeInfo['publishedDate']?.toString() ?? '';
+          final isRecent = publishedDate.isEmpty || 
+                          publishedDate.startsWith(RegExp(r'20[0-9][0-9]|201[0-9]|202[0-9]'));
+          
+          // Sayfa sayısı kontrolü (çok kısa kitapları eleme)
+          final pageCount = volumeInfo['pageCount'] ?? 0;
+          final hasReasonableLength = pageCount == 0 || pageCount > 100;
+          
+          return hasImage && hasAuthor && isRecent && hasReasonableLength;
+        }).take(12).toList(); // İlk 12 kaliteli kitabı al
+        
+        print('Fetched ${items.length} quality books for genre: $genre');
+        return items;
       } else {
         print(
           'Google API Error (Genre: $genre): Status Code ${response.statusCode}',

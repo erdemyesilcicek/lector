@@ -304,4 +304,30 @@ class DatabaseService {
         .map((doc) => ExhibitionBook.fromDoc(doc.data(), doc.id))
         .toList();
   }
+
+  // Profile Management
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    if (_userId == null) return null;
+
+    final doc = await _firestore.collection('users').doc(_userId).get();
+    return doc.data();
+  }
+
+  Future<void> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    if (_userId == null) return;
+
+    final updates = <String, dynamic>{};
+    if (displayName != null) updates['displayName'] = displayName;
+    if (photoUrl != null) updates['photoUrl'] = photoUrl;
+
+    if (updates.isNotEmpty) {
+      await _firestore.collection('users').doc(_userId).set(
+            updates,
+            SetOptions(merge: true),
+          );
+    }
+  }
 }

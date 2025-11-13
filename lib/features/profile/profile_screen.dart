@@ -2,20 +2,12 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/constants/text_styles.dart';
-import 'package:lector/core/models/book_model.dart';
-import 'package:lector/core/models/exhibition_book_model.dart';
-import 'package:lector/core/services/auth_service.dart';
 import 'package:lector/core/services/database_service.dart';
-import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/features/profile/recommendations_screen.dart';
 import 'package:lector/features/settings/settings_screen.dart';
-import 'package:lector/widgets/banner_card.dart';
-import 'package:lector/widgets/custom_app_bar.dart';
-import 'package:lector/widgets/generated_cover_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,11 +17,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final AuthService _authService = AuthService();
   final DatabaseService _databaseService = DatabaseService();
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   late Future<Map<String, dynamic>> _profileDataFuture;
+  String? _displayName;
 
   @override
   void initState() {
@@ -39,9 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<Map<String, dynamic>> _loadProfileData() async {
     final books = await _databaseService.getExhibitionBooks();
-    final recentBooks = await _databaseService.getRecentExhibitionBooks(
-      limit: 3,
-    );
+    final userProfile = await _databaseService.getUserProfile();
+
+    // Load profile data
+    _displayName = userProfile?['displayName'];
 
     Map<String, dynamic> stats = {
       'totalBooks': 0,
@@ -83,54 +76,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
       };
     }
 
-    return {'stats': stats, 'recentBooks': recentBooks};
+    return {'stats': stats};
   }
 
   String _getInitials(String? email) {
+    if (_displayName != null && _displayName!.isNotEmpty) {
+      return _displayName!.substring(0, _displayName!.length < 2 ? 1 : 2).toUpperCase();
+    }
     if (email == null || email.isEmpty) return '?';
-
     final username = email.split('@').first;
     if (username.isEmpty) return '?';
-
-    return username[0].toUpperCase();
+    return username.substring(0, username.length < 2 ? 1 : 2).toUpperCase();
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-
-    if (hour < 12) {
-      return 'Good morning!';
-    } else if (hour < 17) {
-      return 'Good afternoon!';
-    } else {
-      return 'Good evening!';
+  String _getUsername(String? email) {
+    if (_displayName != null && _displayName!.isNotEmpty) {
+      return _displayName!;
     }
+    if (email == null || email.isEmpty) return 'User';
+    return email.split('@').first;
   }
 
-  String _maskEmail(String? email) {
-    if (email == null || !email.contains('@')) return 'No Email';
-    final parts = email.split('@');
-    final name = parts[0];
-    final domain = parts[1];
-    if (name.length <= 2) return email;
-    return '${name.substring(0, 2)}***@$domain';
+  Future<void> _editDisplayName() async {
+    final controller = TextEditingController(text: _displayName ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.background,
+        title: Text('Edit Name', style: AppTextStyles.headline3),
+        content: TextField(
+          controller: controller,
+          style: AppTextStyles.bodyMedium,
+          decoration: InputDecoration(
+            hintText: 'Enter your name',
+            hintStyle: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text(
+              'Save',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      await _databaseService.updateUserProfile(displayName: result);
+      setState(() {
+        _displayName = result;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Profile'),
       backgroundColor: AppColors.background,
       body: FutureBuilder<Map<String, dynamic>>(
         future: _profileDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 2,
+              ),
+            );
           }
           if (snapshot.hasError) {
-            print("Profile Load Error: ${snapshot.error}");
             return const Center(child: Text('Could not load profile data.'));
           }
           if (!snapshot.hasData) {
@@ -139,368 +176,264 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           final profileData = snapshot.data!;
           final stats = profileData['stats'] as Map<String, dynamic>;
-          final recentBooks =
-              profileData['recentBooks'] as List<ExhibitionBook>;
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                _profileDataFuture = _loadProfileData();
-              });
-            },
-            child: ListView(
-              padding: const EdgeInsets.all(AppConstants.paddingMedium),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.primary.withOpacity(0.1),
-                      width: 2,
+          return CustomScrollView(
+            slivers: [
+              // Minimal App Bar
+              SliverAppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                floating: true,
+                snap: true,
+                actions: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: AppColors.primary,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
-                  child: Row(
+                ],
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.paddingLarge,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Stack(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primary.withOpacity(0.6),
+                      const SizedBox(height: 20),
+
+                      // Minimalist Profile Header
+                      Center(
+                        child: Column(
+                          children: [
+                            // Simple Circle Avatar
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.primary,
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  width: 4,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _getInitials(_currentUser?.email),
+                                  style: AppTextStyles.headline1.copyWith(
+                                    color: AppColors.background,
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.w300,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Username with edit button
+                            GestureDetector(
+                              onTap: _editDisplayName,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _getUsername(_currentUser?.email),
+                                    style: AppTextStyles.headline1.copyWith(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w300,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.edit_outlined,
+                                    size: 20,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ],
                               ),
                             ),
-                            child: CircleAvatar(
-                              radius: 35,
-                              backgroundColor: Colors.transparent,
-                              child: Text(
-                                _getInitials(_currentUser?.email),
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: AppConstants.paddingLarge),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.sunny,
-                                  size: 16,
-                                  color: Colors.amber,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _getGreeting(),
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
+
+                            const SizedBox(height: 8),
+
+                            // Email
                             Text(
-                              _maskEmail(_currentUser?.email),
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                              _currentUser?.email ?? 'no email',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                                letterSpacing: 0.5,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
-                            ),
-                          );
-                        },
-                        icon: SvgPicture.asset(
-                          'assets/icon/settings.svg',
-                          color: AppColors.textSecondary,
-                          width: AppConstants.iconSizeMedium,
-                          height: AppConstants.iconSizeMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: AppColors.surface,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                      const SizedBox(height: 60),
+
+                      // Stats Section with Minimal Design
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.auto_graph_rounded,
-                                  color: AppColors.primary,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: AppConstants.paddingMedium),
-                              Text(
-                                'Reading Stats',
-                                style: theme.textTheme.headlineSmall,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppConstants.paddingLarge),
-                          _buildModernStatRow(
-                            Icons.book_rounded,
-                            'Total Books Read',
-                            '${stats['totalBooks']}',
-                            Colors.teal,
-                          ),
-                          const SizedBox(height: AppConstants.paddingMedium),
-                          _buildModernStatRow(
-                            Icons.favorite_rounded,
-                            'Favorite Genre',
-                            stats['favoriteGenre'],
-                            Colors.pink,
-                          ),
-                          const SizedBox(height: AppConstants.paddingMedium),
-                          _buildModernStatRow(
-                            Icons.edit_rounded,
-                            'Favorite Author',
-                            stats['favoriteAuthor'],
-                            Colors.deepPurple,
+                          Expanded(
+                            child: _buildMinimalStat(
+                              '${stats['totalBooks']}',
+                              'Books Read',
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-                BannerCard(
-                  title: "Recommendation",
-                  description: "Discover books you'll love.",
-                  assetImagePath: "assets/images/light.png",
-                  height: 100,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RecommendationsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
 
-                if (recentBooks.isNotEmpty) ...[
-                  Text('Recently Added', style: theme.textTheme.headlineSmall),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  SizedBox(
-                    height: 180,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: recentBooks.length,
-                      itemBuilder: (context, index) {
-                        final book = recentBooks[index];
-                        return SizedBox(
-                          width: 120,
-                          child: _buildRecentBookCard(book),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingLarge),
-                ],
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      _authService.signOut();
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Sign Out'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                    ),
+                      const SizedBox(height: 40),
+
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: AppColors.border.withOpacity(0.3),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Favorite Details
+                      _buildDetailRow('Favorite Genre', stats['favoriteGenre']),
+
+                      const SizedBox(height: 32),
+
+                      _buildDetailRow(
+                        'Favorite Author',
+                        stats['favoriteAuthor'],
+                      ),
+
+                      const SizedBox(height: 50),
+
+                      // Action Buttons
+                      _buildActionButton(
+                        'Get Recommendations',
+                        Icons.auto_awesome_outlined,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const RecommendationsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildModernStatRow(
-    IconData icon,
+  Widget _buildMinimalStat(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTextStyles.headline1.copyWith(
+            fontSize: 56,
+            fontWeight: FontWeight.w200,
+            letterSpacing: -2,
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(
+            letterSpacing: 1.5,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: AppTextStyles.bodySmall.copyWith(
+            letterSpacing: 1.2,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: AppTextStyles.headline3.copyWith(
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(
     String label,
-    String value,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    IconData icon,
+    VoidCallback onTap, {
+    bool isPrimary = true,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: isPrimary ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isPrimary
+                ? AppColors.primary
+                : AppColors.border.withOpacity(0.5),
+            width: 1,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: isPrimary ? AppColors.background : AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.3,
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: AppConstants.paddingMedium),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
+            Icon(
+              icon,
+              color: isPrimary ? AppColors.background : AppColors.textSecondary,
+              size: 20,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentBookCard(ExhibitionBook exBook) {
-    final bookForDetail = Book(
-      id: exBook.id,
-      title: exBook.title,
-      author: exBook.author,
-      coverUrl: exBook.coverUrl,
-      summary: exBook.summary,
-      genres: exBook.genres,
-    );
-    final bool hasRealCover = !exBook.coverUrl.contains(
-      'i.imgur.com/J5LVHEL.png',
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(right: AppConstants.paddingSmall),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BookDetailScreen(book: bookForDetail),
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-          child: hasRealCover
-              ? Image.network(
-                  exBook.coverUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: AppColors.surface,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return GeneratedCover(
-                      title: exBook.title,
-                      author: exBook.author,
-                    );
-                  },
-                )
-              : GeneratedCover(title: exBook.title, author: exBook.author),
+          ],
         ),
       ),
     );

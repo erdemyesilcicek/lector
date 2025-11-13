@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart';
-import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/features/authentication/auth_gate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

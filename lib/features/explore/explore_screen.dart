@@ -6,10 +6,12 @@ import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/book_service.dart';
 import 'package:lector/core/services/database_service.dart';
+import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/features/explore/explore_big_card.dart';
-import 'package:lector/features/explore/explore_card.dart';
+import 'package:lector/widgets/book_card_widget.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/rating_modal_widget.dart';
+import 'package:lector/widgets/shimmer_loading.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -21,7 +23,11 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   final BookService _bookService = BookService();
   final DatabaseService _databaseService = DatabaseService();
+
   Future<List<Book>>? _fantasyBooksFuture;
+  Future<List<Book>>? _sciFiBooksFuture;
+  Future<List<Book>>? _thrillerBooksFuture;
+  Future<List<Book>>? _classicsFuture;
 
   Set<String> _readBookIds = {};
   Set<String> _readingListIds = {};
@@ -29,10 +35,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void initState() {
     super.initState();
-    _loadFantasyBooks();
+    _loadBooks();
   }
 
-  Future<void> _loadFantasyBooks() async {
+  Future<void> _loadBooks() async {
     _readBookIds = await _databaseService.getReadBookIds();
     final readingList = await _databaseService.getReadingListStream().first;
     _readingListIds = readingList.map((b) => b.id).toSet();
@@ -40,10 +46,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     setState(() {
       _fantasyBooksFuture = _fetchGoogleBooksAndFilter(
-        () => _bookService.fetchBooksByGenre('fantasy'),
+        () => _bookService.fetchBooksByGenre('fantasy fiction bestseller'),
         excludedIds,
       );
+      _sciFiBooksFuture = _fetchGoogleBooksAndFilter(
+        () => _bookService.fetchBooksByGenre('science fiction bestseller'),
+        excludedIds,
+      );
+      _thrillerBooksFuture = _fetchGoogleBooksAndFilter(
+        () => _bookService.fetchBooksByGenre('thriller suspense bestseller'),
+        excludedIds,
+      );
+      _classicsFuture = _fetchAwardWinnersAndFilter(excludedIds);
     });
+  }
+
+  Future<List<Book>> _fetchAwardWinnersAndFilter(
+    Set<String> excludedIds,
+  ) async {
+    final books = await _bookService.fetchAwardWinners();
+    return books.where((book) => !excludedIds.contains(book.id)).toList();
   }
 
   Future<List<Book>> _fetchGoogleBooksAndFilter(
@@ -69,87 +91,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppConstants.paddingMedium),
-              child: Text('Categories', style: theme.textTheme.headlineSmall),
-            ),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.paddingMedium,
-              ),
-              crossAxisCount: 3,
-              crossAxisSpacing: AppConstants.paddingMedium,
-              mainAxisSpacing: AppConstants.paddingMedium,
-              childAspectRatio: 0.9,
-              children: <Widget>[
-                ExploreCard(
-                  iconAssetPath: 'assets/images/sci-fi.png',
-                  text: 'Sci-Fi',
-                  onTap: () {
-                    print('Sci-Fi tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/thriller.png',
-                  text: 'Thriller',
-                  onTap: () {
-                    print('Thriller tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/romance.png',
-                  text: 'Romance',
-                  onTap: () {
-                    print('Romance tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/fantasy.png',
-                  text: 'Fantasy',
-                  onTap: () {
-                    print('Fantasy tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/religion.png',
-                  text: 'Religion',
-                  onTap: () {
-                    print('Religion tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/history.png',
-                  text: 'History',
-                  onTap: () {
-                    print('History tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/detective.png',
-                  text: 'Detective',
-                  onTap: () {
-                    print('Detective tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/science.png',
-                  text: 'Science',
-                  onTap: () {
-                    print('Science tıklandı');
-                  },
-                ),
-                ExploreCard(
-                  iconAssetPath: 'assets/images/children.png',
-                  text: 'Children',
-                  onTap: () {
-                    print('Children tıklandı');
-                  },
-                ),
-              ],
-            ),
-
-            Padding(
               padding: const EdgeInsets.only(
                 left: AppConstants.paddingMedium,
                 right: AppConstants.paddingMedium,
@@ -158,7 +99,43 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               child: Text('Classics', style: theme.textTheme.headlineSmall),
             ),
-            _buildHorizontalBigCardList(_fantasyBooksFuture),
+            _buildHorizontalBigCardList(_classicsFuture),
+
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppConstants.paddingMedium,
+                right: AppConstants.paddingMedium,
+                top: AppConstants.paddingLarge,
+                bottom: AppConstants.paddingMedium,
+              ),
+              child: Text('Fantasy', style: theme.textTheme.headlineSmall),
+            ),
+            _buildHorizontalBookList(_fantasyBooksFuture),
+
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppConstants.paddingMedium,
+                right: AppConstants.paddingMedium,
+                top: AppConstants.paddingLarge,
+                bottom: AppConstants.paddingMedium,
+              ),
+              child: Text(
+                'Science Fiction',
+                style: theme.textTheme.headlineSmall,
+              ),
+            ),
+            _buildHorizontalBookList(_sciFiBooksFuture),
+
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppConstants.paddingMedium,
+                right: AppConstants.paddingMedium,
+                top: AppConstants.paddingLarge,
+                bottom: AppConstants.paddingMedium,
+              ),
+              child: Text('Thriller', style: theme.textTheme.headlineSmall),
+            ),
+            _buildHorizontalBookList(_thrillerBooksFuture),
 
             const SizedBox(height: AppConstants.paddingLarge),
           ],
@@ -183,9 +160,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
       future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
+          return SizedBox(
             height: cardHeight,
-            child: Center(child: CircularProgressIndicator()),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.paddingMedium,
+              ),
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: cardWidth,
+                  margin: const EdgeInsets.only(
+                    right: AppConstants.paddingMedium,
+                  ),
+                  child: const BigCardShimmer(),
+                );
+              },
+            ),
           );
         }
         if (snapshot.hasError) {
@@ -260,11 +252,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           setState(() {
                             _readBookIds.add(book.id);
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Saved to your Exhibition!'),
-                            ),
-                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Saved to your Exhibition!'),
+                              ),
+                            );
+                          }
                         }
                       },
                       onToggleReadingList: () {
@@ -287,6 +281,106 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   );
                 },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHorizontalBookList(Future<List<Book>>? future) {
+    final theme = Theme.of(context);
+
+    if (future == null) {
+      return const SizedBox(
+        height: 220,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return FutureBuilder<List<Book>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox(
+            height: 220,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(
+                left: AppConstants.paddingMedium + AppConstants.paddingSmall / 2,
+              ),
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    right: AppConstants.paddingMedium,
+                  ),
+                  child: const BookCardShimmer(),
+                );
+              },
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: 220,
+            child: Center(
+              child: Text(
+                'Could not load books.\nPlease try again later.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox(
+            height: 220,
+            child: Center(
+              child: Text(
+                'No new books to show.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final books = snapshot.data!;
+        return SizedBox(
+          height: 220,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(
+              left: AppConstants.paddingMedium + AppConstants.paddingSmall / 2,
+            ),
+            itemCount: books.length,
+            itemBuilder: (context, index) {
+              final book = books[index];
+              return Padding(
+                padding: const EdgeInsets.only(
+                  right: AppConstants.paddingMedium,
+                ),
+                child: SizedBox(
+                  width: 130,
+                  child: BookCard(
+                    key: ValueKey(book.id),
+                    title: book.title,
+                    author: book.author,
+                    coverUrl: book.coverUrl,
+                    showAwardBadge: false,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookDetailScreen(book: book),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               );
             },
           ),

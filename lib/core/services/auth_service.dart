@@ -37,6 +37,25 @@ class AuthService {
     }
   }
 
+  Future<UserCredential?> signInAnonymously() async {
+    try {
+      final credential = await _firebaseAuth.signInAnonymously();
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      print('Anonymous sign in failed: ${e.message}');
+      return null;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      print('Password reset failed: ${e.message}');
+      rethrow;
+    }
+  }
+
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }

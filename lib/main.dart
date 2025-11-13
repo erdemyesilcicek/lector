@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lector/core/constants/app_theme.dart';
 import 'package:lector/core/providers/theme_provider.dart';
-import 'package:lector/features/authentication/auth_gate.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:lector/features/onboard/onboarding_gate.dart';
