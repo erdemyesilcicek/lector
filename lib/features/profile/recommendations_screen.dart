@@ -6,6 +6,7 @@ import 'package:lector/core/models/book_model.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
+import 'package:lector/widgets/shimmer_loading.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -33,7 +34,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         future: _recommendationsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const GridShimmer();
           }
           if (snapshot.hasError) {
             return const Center(

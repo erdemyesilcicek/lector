@@ -11,7 +11,7 @@ class AppColors {
   static const Color background = Color.fromARGB(255, 255, 250, 248);
   static const Color surface = Color.fromARGB(255, 255, 253, 252);
   static const Color onSurface = Color.fromARGB(255, 255, 250, 248);
-
+  static const Color BROWN = Color(0xFF4A2C2A);
 
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF666666);

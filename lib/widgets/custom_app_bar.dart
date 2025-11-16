@@ -6,15 +6,22 @@ import 'package:lector/core/constants/app_constants.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
+  final bool showBackButton;
 
-  const CustomAppBar({super.key, required this.title, this.actions});
+  const CustomAppBar({
+    super.key,
+    required this.title,
+    this.actions,
+    this.showBackButton = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
     return AppBar(
-      automaticallyImplyLeading: true,
-      iconTheme: const IconThemeData(color: Colors.white),
+      automaticallyImplyLeading: showBackButton,
+      iconTheme: IconThemeData(color: theme.colorScheme.primary),
       backgroundColor: Colors.transparent,
       elevation: 0,
       titleSpacing: AppConstants.paddingMedium,

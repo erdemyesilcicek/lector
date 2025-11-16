@@ -19,24 +19,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Onboarding içeriği
   final List<OnboardingPage> onboardingData = [
     OnboardingPage(
-      imagePath: 'assets/images/onboard1.png',
-      title: 'Welcome to Lector',
-      description: 'Your personal companion for discovering and tracking amazing books.',
+      icon: Icons.menu_book_rounded,
+      title: 'Discover Books',
+      description: 'Find your next favorite book among thousands of titles. Explore categories, authors, and personalized recommendations.',
+      primaryColor: AppColors.primary,
+      secondaryColor: const Color(0xFF2D2D2D),
     ),
     OnboardingPage(
-      imagePath: 'assets/images/onboard22.png',
+      icon: Icons.collections_bookmark_rounded,
       title: 'Build Your Library',
-      description: 'Keep track of what you\'ve read and what you want to read next.',
+      description: 'Organize books you\'ve read and want to read. Take notes and track your reading progress.',
+      primaryColor: const Color(0xFF1F1F1F),
+      secondaryColor: const Color(0xFF3A3A3A),
     ),
     OnboardingPage(
-      imagePath: 'assets/images/onboard3.png',
-      title: 'Smart Recommendations',
-      description: 'Let Lector learn your taste and suggest books you\'ll truly love.',
+      icon: Icons.analytics_rounded,
+      title: 'Track Your Progress',
+      description: 'Analyze your reading habits. Set goals and watch yourself grow as a reader.',
+      primaryColor: const Color(0xFF2A2A2A),
+      secondaryColor: const Color(0xFF404040),
     ),
     OnboardingPage(
-      imagePath: 'assets/images/onboard4.png',
-      title: 'You\'re All Set!',
-      description: 'Ready to dive into the world of books? Let\'s get started!',
+      icon: Icons.auto_awesome_rounded,
+      title: 'Ready to Start!',
+      description: 'Welcome to your reading journey. Let\'s create the perfect experience for you.',
+      primaryColor: AppColors.primary,
+      secondaryColor: const Color(0xFF333333),
     ),
   ];
 
@@ -65,31 +73,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             // Skip butonu (son sayfa hariç)
             if (_currentPage != onboardingData.length - 1)
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextButton(
-                    onPressed: _completeOnboarding,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _completeOnboarding,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text(
+                        'Skip',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.2,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               )
             else
-              const SizedBox(height: 56),
+              const SizedBox(height: 60),
 
             // Sayfa içeriği
             Expanded(
@@ -104,36 +115,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, index) {
                   final item = onboardingData[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Görsel
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            item.imagePath,
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 200,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Icon(
-                                  Icons.image_outlined,
-                                  size: 80,
-                                  color: AppColors.textSecondary,
-                                ),
-                              );
-                            },
+                        // İkon container ile animasyonlu gradyan
+                        Container(
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                item.primaryColor,
+                                item.secondaryColor,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: [
+                              BoxShadow(
+                                color: item.primaryColor.withOpacity(0.3),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            item.icon,
+                            size: 80,
+                            color: Colors.white.withOpacity(0.95),
                           ),
                         ),
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 64),
 
                         // Başlık
                         Text(
@@ -147,16 +161,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             height: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         // Açıklama
-                        Text(
-                          item.description,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                            height: 1.6,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            item.description,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                              height: 1.6,
+                              letterSpacing: 0.1,
+                            ),
                           ),
                         ),
                       ],
@@ -168,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // Alt kısım: İndikatörler ve butonlar
             Padding(
-              padding: const EdgeInsets.all(32.0),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
                   // Sayfa göstergesi
@@ -184,137 +202,153 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: _currentPage == index
                               ? AppColors.primary
-                              : AppColors.border,
+                              : AppColors.border.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(4.0),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
 
-                  // Butonlar (yan yana veya tek)
-                  _currentPage == 0 || _currentPage == onboardingData.length - 1
-                      ? SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
+                  // Butonlar
+                  if (_currentPage == onboardingData.length - 1)
+                    // Son sayfa: Sadece "Başla" butonu
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _completeOnboarding,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Get Started',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_rounded, size: 22),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_currentPage == 0)
+                    // İlk sayfa: Sadece "İleri" butonu
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Next',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_rounded, size: 22),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    // Ortadaki sayfalar: Geri ve İleri butonları
+                    Row(
+                      children: [
+                        // Geri butonu
+                        SizedBox(
+                          height: 56,
+                          child: OutlinedButton(
                             onPressed: () {
-                              if (_currentPage == onboardingData.length - 1) {
-                                _completeOnboarding();
-                              } else {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              side: BorderSide(
+                                color: AppColors.border.withOpacity(0.8),
+                                width: 1.5,
+                              ),
+                              foregroundColor: AppColors.textSecondary,
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                            ),
+                            child: const Icon(Icons.arrow_back_rounded, size: 22),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // İleri butonu
+                        Expanded(
+                          child: SizedBox(
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () {
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 400),
                                   curve: Curves.easeInOut,
                                 );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 0,
                               ),
-                              elevation: 0,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _currentPage == onboardingData.length - 1
-                                      ? 'Get Started'
-                                      : 'Next',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Next',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  _currentPage == onboardingData.length - 1
-                                      ? Icons.check_rounded
-                                      : Icons.arrow_forward_rounded,
-                                  size: 20,
-                                ),
-                              ],
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded, size: 22),
+                                ],
+                              ),
                             ),
                           ),
-                        )
-                      : Row(
-                          children: [
-                            // Back butonu
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  _pageController.previousPage(
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  side: const BorderSide(
-                                    color: AppColors.border,
-                                    width: 1.5,
-                                  ),
-                                  foregroundColor: AppColors.textSecondary,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.arrow_back_rounded, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Back',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-
-                            // Next butonu
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _pageController.nextPage(
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Next',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward_rounded, size: 20),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -327,13 +361,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 // Onboarding page modeli
 class OnboardingPage {
-  final String imagePath;
+  final IconData icon;
   final String title;
   final String description;
+  final Color primaryColor;
+  final Color secondaryColor;
 
   OnboardingPage({
-    required this.imagePath,
+    required this.icon,
     required this.title,
     required this.description,
+    required this.primaryColor,
+    required this.secondaryColor,
   });
 }

@@ -8,6 +8,7 @@ import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/profile/recommendations_screen.dart';
 import 'package:lector/features/settings/settings_screen.dart';
+import 'package:lector/widgets/shimmer_loading.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -160,12 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         future: _profileDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-                strokeWidth: 2,
-              ),
-            );
+            return const ProfileShimmer();
           }
           if (snapshot.hasError) {
             return const Center(child: Text('Could not load profile data.'));

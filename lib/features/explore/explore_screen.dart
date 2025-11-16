@@ -150,9 +150,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
     const double cardWidth = cardHeight * 0.7;
 
     if (future == null) {
-      return const SizedBox(
+      return SizedBox(
         height: cardHeight,
-        child: Center(child: CircularProgressIndicator()),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingMedium,
+          ),
+          itemCount: 5,
+          itemBuilder: (context, index) {
+            return Container(
+              width: cardWidth,
+              margin: const EdgeInsets.only(
+                right: AppConstants.paddingMedium,
+              ),
+              child: const BigCardShimmer(),
+            );
+          },
+        ),
       );
     }
 
@@ -293,9 +308,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final theme = Theme.of(context);
 
     if (future == null) {
-      return const SizedBox(
+      return SizedBox(
         height: 220,
-        child: Center(child: CircularProgressIndicator()),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(
+            left: AppConstants.paddingMedium + AppConstants.paddingSmall / 2,
+          ),
+          itemCount: 5,
+          itemBuilder: (context, index) {
+            return const Padding(
+              padding: EdgeInsets.only(
+                right: AppConstants.paddingMedium,
+              ),
+              child: BookCardShimmer(),
+            );
+          },
+        ),
       );
     }
 

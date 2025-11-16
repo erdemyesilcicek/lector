@@ -10,6 +10,7 @@ import 'package:lector/core/services/database_service.dart';
 import 'package:lector/features/explore/book_detail_screen.dart';
 import 'package:lector/widgets/custom_app_bar.dart';
 import 'package:lector/widgets/generated_cover_widget.dart';
+import 'package:lector/widgets/shimmer_loading.dart';
 
 class ExhibitionScreen extends StatefulWidget {
   const ExhibitionScreen({super.key});
@@ -30,7 +31,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
         stream: _databaseService.getExhibitionStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const GridShimmer();
           }
           if (snapshot.hasError) {
             return Center(child: Text('An error occurred: ${snapshot.error}'));
@@ -43,7 +44,7 @@ class _ExhibitionScreenState extends State<ExhibitionScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons.shelves,
+                      Icons.auto_stories_rounded,
                       size: 80,
                       color: AppColors.textSecondary,
                     ),

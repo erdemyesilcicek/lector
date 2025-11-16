@@ -1,11 +1,11 @@
 // lib/features/profile/settings_screen.dart
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lector/core/constants/app_colors.dart';
 import 'package:lector/core/constants/app_constants.dart';
 import 'package:lector/core/constants/text_styles.dart';
 import 'package:lector/core/services/auth_service.dart';
+import 'package:lector/widgets/custom_app_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,20 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Settings',
-          style: AppTextStyles.headline2.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'Settings', showBackButton: true),
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.paddingMedium),
         children: [

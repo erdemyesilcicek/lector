@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const ListShimmer()
           : isSearching
           ? _buildSearchResults()
           : _buildDefaultContent(),

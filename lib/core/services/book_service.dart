@@ -269,11 +269,9 @@ class BookService {
     try {
       final encodedQuery = Uri.encodeComponent(query);
 
-      // AKILLI SORGULAMA: Hem başlıkta hem yazarda ara + Sadece kitapları getir
-      // Örnek: q=(intitle:Dune OR inauthor:Dune)&printType=books
-      final String smartQuery = '(intitle:$encodedQuery OR inauthor:$encodedQuery)';
-      final String url = '$_googleBaseUrl?q=$smartQuery&printType=books&maxResults=40'; // Daha fazla sonuç alıp ayıklayacağız
-      print("Performing smart search with URL: $url"); // Sorguyu kontrol et
+      // ÇOK GENİŞ ARAMA: Dil kısıtlaması yok, daha fazla sonuç
+      final String url = '$_googleBaseUrl?q=$encodedQuery&printType=books&maxResults=40&orderBy=relevance';
+      print("Performing wide search with URL: $url");
 
       final response = await http.get(Uri.parse(url));
 
@@ -281,42 +279,61 @@ class BookService {
         final data = json.decode(response.body);
         List<dynamic> items = data['items'] ?? [];
 
+        // Arama terimi ile esnek filtreleme - kelime kelime arama da yapalım
+        final lowerQuery = query.toLowerCase();
+        final queryWords = lowerQuery.split(' ').where((w) => w.length > 2).toList();
+        
+        items = items.where((item) {
+          final volumeInfo = item['volumeInfo'];
+          if (volumeInfo == null) return false;
+          
+          final title = (volumeInfo['title'] ?? '').toLowerCase();
+          final authors = (volumeInfo['authors'] as List<dynamic>?)?.join(', ').toLowerCase() ?? '';
+          final searchText = '$title $authors';
+          
+          // Tam arama terimi geçiyorsa VEYA kelimelerden herhangi biri geçiyorsa kabul et
+          if (searchText.contains(lowerQuery)) return true;
+          
+          // Kelime kelime kontrol - en az bir kelime geçmeli
+          for (var word in queryWords) {
+            if (searchText.contains(word)) return true;
+          }
+          
+          return false;
+        }).toList();
+
         // --- UYGULAMA İÇİ TEKİLLEŞTİRME ---
         if (items.isNotEmpty) {
-          final uniqueBooks = <String, Map<String, dynamic>>{}; // Benzersiz kitapları tutacak map
-          final seenKeys = <String>{}; // Başlık+Yazar kombinasyonunu takip et
+          final uniqueBooks = <String, Map<String, dynamic>>{};
+          final seenKeys = <String>{};
 
           for (var item in items) {
             final volumeInfo = item['volumeInfo'];
-            if (volumeInfo == null) continue; // Geçersiz veri
+            if (volumeInfo == null) continue;
 
             final title = (volumeInfo['title'] ?? '').toLowerCase();
             final authors = (volumeInfo['authors'] as List<dynamic>?)?.join(', ').toLowerCase() ?? '';
-            // Kitabı benzersiz kılan anahtar: başlık + ilk yazar (varsa)
             final bookKey = '$title###${authors.split(',').first.trim()}';
 
-            // Eğer bu kitap kombinasyonunu daha önce görmediysek VEYA
-            // Bu yeni versiyon daha iyi görünüyorsa (örn: kapağı varsa) eskisini değiştir
             if (!seenKeys.contains(bookKey) ||
-                (volumeInfo['imageLinks']?['thumbnail'] != null && uniqueBooks[bookKey]?['volumeInfo']?['imageLinks']?['thumbnail'] == null))
+                (volumeInfo['imageLinks']?['thumbnail'] != null && 
+                 uniqueBooks[bookKey]?['volumeInfo']?['imageLinks']?['thumbnail'] == null))
             {
               seenKeys.add(bookKey);
-              uniqueBooks[bookKey] = item as Map<String, dynamic>; // item'ı Map'e cast et
+              uniqueBooks[bookKey] = item as Map<String, dynamic>;
             }
           }
-          // Map'teki değerleri (yani seçilen en iyi versiyonları) listeye çevir
           items = uniqueBooks.values.toList();
-          print("Deduplication complete. Returning ${items.length} unique results.");
+          print("Search complete. Returning ${items.length} unique results for query: $query");
         }
         return items;
-        // --- ---
 
       } else {
-         print('Google API Error (Smart Search: $query): Status Code ${response.statusCode}');
+         print('Google API Error (Search: $query): Status Code ${response.statusCode}');
          return [];
       }
     } catch (e) {
-      print('Error during smart book search: $e');
+      print('Error during book search: $e');
       return [];
     }
   }
